@@ -111,12 +111,12 @@ a {
 }
 
 .avatar {
-  width: min(70vw, 16.5rem);
+  width: min(74vw, 18.5rem);
   height: auto;
   aspect-ratio: 1;
   object-fit: cover;
-  object-position: center;
-  border-radius: 63% 37% 54% 46% / 42% 58% 42% 58%;
+  object-position: center 42%;
+  border-radius: 58% 42% 52% 48% / 46% 54% 46% 54%;
   box-shadow: 0 16px 40px rgba(120, 50, 80, 0.16);
   background: #f3d0d8;
 }
@@ -409,7 +409,7 @@ h1 {
   }
 
   .avatar {
-    width: 17.5rem;
+    width: 18.5rem;
     height: auto;
   }
 }

@@ -70,7 +70,7 @@ The feed shows a few cards at a time and loads more as you scroll. After the lis
 ## Change the name, photo, and links
 
 - The big title and the line under it are in `index.html` (`Janice SI` and `Hi nice to meet you all 🫶🏻`).
-- The portrait is `assets/janice-avatar.jpg`. Replace that file, or change the `src` on the avatar image. Keep useful `alt` text.
+- The portrait is `assets/janice-avatar.jpg` (her profile photo). Replace that file, or change the `src` on the avatar image. Keep useful `alt` text.
 - Social buttons are the four links in the footer of `index.html`.
 
 ## Deploy on GitHub Pages
