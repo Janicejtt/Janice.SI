@@ -2,7 +2,6 @@ import { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } from
 import { embedFor } from "./media.js";
 
 const BATCH = 2;
-const EXTRA_LOOPS = 1;
 const CACHE_KEY = "janice.si.art";
 const CACHE_MS = 60_000;
 const EDIT_KEY = "janice.si.edit";
@@ -11,7 +10,6 @@ const TYPES = new Set(["image", "video", "youtube", "tiktok", "instagram"]);
 const feed = document.querySelector("#feed");
 const statusEl = document.querySelector("#feed-status");
 const sentinel = document.querySelector("#sentinel");
-const endNote = document.querySelector("#end-note");
 const lightbox = document.querySelector("#lightbox");
 const lightboxImg = document.querySelector("#lightbox-img");
 const lightboxCaption = document.querySelector("#lightbox-caption");
@@ -292,10 +290,9 @@ function renderEmbed(item) {
   return [platformPoster(item.type), button];
 }
 
-function renderCard(item, index, loop) {
+function renderCard(item, index) {
   const card = el("article", "card");
   card.dataset.index = String(index);
-  card.dataset.loop = String(loop);
   const media = el("div", "card-media");
   if (item.type === "image") {
     media.append(renderImage(item, index < 2));
@@ -336,14 +333,7 @@ function appendBatch() {
   const fragment = document.createDocumentFragment();
   let added = 0;
   while (added < BATCH && cursor < total) {
-    if (cursor > 0 && cursor % items.length === 0) {
-      const note = el("p", "loop-note");
-      note.textContent = "Showing the collection again";
-      fragment.append(note);
-    }
-    const item = items[cursor % items.length];
-    const loop = Math.floor(cursor / items.length);
-    fragment.append(renderCard(item, cursor, loop));
+    fragment.append(renderCard(items[cursor], cursor));
     cursor += 1;
     added += 1;
   }
@@ -357,7 +347,6 @@ function finish() {
   observer?.disconnect();
   if (editMode && sentinel.isConnected) feed.insertBefore(renderAddCard(), sentinel);
   if (sentinel.isConnected) sentinel.remove();
-  endNote.hidden = items.length === 0;
 }
 
 function fillAhead() {
@@ -381,7 +370,6 @@ function fillAhead() {
 function showError(message) {
   statusEl.classList.remove("visually-hidden");
   statusEl.textContent = message;
-  endNote.hidden = true;
   if (editMode && sentinel.isConnected) feed.insertBefore(renderAddCard(), sentinel);
   if (sentinel.isConnected) sentinel.remove();
   finished = true;
@@ -452,7 +440,7 @@ async function init() {
     finish();
     return;
   }
-  total = items.length * (1 + EXTRA_LOOPS);
+  total = items.length;
   observer = new IntersectionObserver(
     (entries) => {
       if (entries.some((entry) => entry.isIntersecting)) fillAhead();

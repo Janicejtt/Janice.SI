@@ -71,7 +71,7 @@ YouTube, TikTok, and Instagram play inline from a URL. Use a link to the video i
 
 `src` works in place of `url` if you prefer one field. Short TikTok links (`vm.tiktok.com`) cannot be embedded; use the full `tiktok.com/@name/video/…` link.
 
-The feed shows a few cards at a time and loads more as you scroll. After the list has been shown, it repeats once. With nothing in `assets/art` and an empty `items` list, visitors see the header only. The **+** card, and the short note under it, appear only in edit mode.
+Each piece is shown once, in the order of `content/feed.json`. Files in `assets/art` that are not listed there are added after those entries. The feed loads a few cards at a time as you scroll. With nothing in `assets/art` and an empty `items` list, visitors see the header only. The **+** card, and the short note under it, appear only in edit mode, after the art.
 
 ## Change the name
 
