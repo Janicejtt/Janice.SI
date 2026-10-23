@@ -178,15 +178,75 @@ function stopOtherMedia(except) {
   });
 }
 
-function useDownloadOnError(node, item) {
+function useDownloadOnError(node, item, rewrite) {
   node.addEventListener("error", () => {
     if (item.download && node.dataset.fallback !== "1") {
       node.dataset.fallback = "1";
-      node.src = item.download;
+      node.src = typeof rewrite === "function" ? rewrite(item.download) : item.download;
       return;
     }
     if (node.tagName === "IMG") node.alt = `${item.alt} (image failed to load)`;
   });
+}
+
+function frameSrc(src, poster) {
+  if (!src || poster || src.includes("#")) return src;
+  return `${src}#t=0.1`;
+}
+
+function audioPresence(video) {
+  if (typeof video.mozHasAudio === "boolean") return video.mozHasAudio;
+  const tracks = video.audioTracks;
+  if (tracks && typeof tracks.length === "number") return tracks.length > 0;
+  return null;
+}
+
+function soundButton(video, play) {
+  const button = el("button", "sound", { type: "button" });
+  button.innerHTML =
+    '<svg class="sound-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5v-5z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M16 10l4 4m0-4-4 4"/></svg>' +
+    '<svg class="sound-on" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5v-5z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.6 9.2a3.4 3.4 0 0 1 0 5.6M18 7a6.2 6.2 0 0 1 0 10"/></svg>';
+  const paint = () => {
+    const on = !video.muted;
+    button.classList.toggle("is-on", on);
+    button.setAttribute("aria-pressed", on ? "true" : "false");
+    button.setAttribute("aria-label", on ? "Mute" : "Unmute");
+  };
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const turnOn = video.muted;
+    if (turnOn) {
+      feed.querySelectorAll("video").forEach((other) => {
+        if (other !== video) other.muted = true;
+      });
+      video.defaultMuted = false;
+      video.removeAttribute("muted");
+      video.muted = false;
+      video.volume = 1;
+      play.hidden = true;
+      const pending = video.play();
+      if (pending && typeof pending.catch === "function") {
+        pending.catch(() => {
+          play.hidden = false;
+        });
+      }
+    } else {
+      video.muted = true;
+    }
+    paint();
+  });
+  video.addEventListener("volumechange", paint);
+  const reveal = () => {
+    const presence = audioPresence(video);
+    if (presence === false) button.hidden = true;
+    else if (presence === true) button.hidden = false;
+  };
+  video.addEventListener("loadedmetadata", reveal);
+  video.addEventListener("loadeddata", reveal);
+  if (video.readyState >= 1) reveal();
+  paint();
+  return button;
 }
 
 function renderImage(item, eager) {
@@ -212,13 +272,14 @@ function renderImage(item, eager) {
 }
 
 function renderFileVideo(item, eager) {
-  const src = locationOf(item);
+  const src = frameSrc(locationOf(item), item.poster);
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const video = el("video", null, {
     src,
     poster: item.poster || undefined,
-    preload: eager && !reduceMotion ? "auto" : "metadata",
+    preload: item.poster && eager && !reduceMotion ? "auto" : "metadata",
     playsinline: "",
+    "webkit-playsinline": "",
     muted: "",
     loop: "",
     autoplay: reduceMotion ? false : "",
@@ -230,11 +291,12 @@ function renderFileVideo(item, eager) {
   video.playsInline = true;
   video.loop = true;
   video.setAttribute("aria-label", item.alt);
-  useDownloadOnError(video, item);
+  useDownloadOnError(video, item, (url) => frameSrc(url, item.poster));
   const button = playButton(`Play video: ${item.alt}`);
   const start = () => {
-    video.muted = true;
     button.hidden = true;
+    if (!video.muted) return;
+    video.muted = true;
     const pending = video.play();
     if (pending && typeof pending.catch === "function") {
       pending.catch(() => {
@@ -243,6 +305,7 @@ function renderFileVideo(item, eager) {
     }
   };
   button.addEventListener("click", start);
+  const sound = soundButton(video, button);
   if (reduceMotion) {
     video.autoplay = false;
     video.removeAttribute("autoplay");
@@ -252,7 +315,7 @@ function renderFileVideo(item, eager) {
     if (video.readyState >= 2) start();
     else video.addEventListener("loadeddata", start, { once: true });
   }
-  return [video, button];
+  return [video, button, sound];
 }
 
 function renderEmbed(item) {

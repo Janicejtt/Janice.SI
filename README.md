@@ -24,7 +24,7 @@ Click **+**. It opens GitHub’s upload page for `assets/art` in a new tab:
 
 [https://github.com/Janicejtt/Janice.SI/upload/main/assets/art](https://github.com/Janicejtt/Janice.SI/upload/main/assets/art)
 
-Upload images (jpg, png, gif, webp, avif, svg) or videos (mp4, webm, mov). Commit the upload. You do not have to edit a JSON file for those files to appear. The site asks GitHub for the list of files in that folder and adds any that are not already in the feed. GitHub Pages can take a minute to publish the file; until then the picture is loaded from GitHub directly.
+Upload images (jpg, png, gif, webp, avif, svg) or videos (`.mp4`, `.mov`, `.webm`). Commit the upload. You do not have to edit a JSON file for those files to appear. The site asks GitHub for the list of files in that folder and adds any that are not already in the feed, including those three video types. A poster image is optional. Without one, the card shows the video’s opening frame. GitHub Pages can take a minute to publish the file; until then the picture is loaded from GitHub directly.
 
 `content/feed.json` is still there when you want more control. Entries in `items` keep their order. New uploads that are not listed there are added after them, by file name. Leave `items` as `[]` if the folder order is enough.
 
@@ -43,7 +43,7 @@ Image, with an optional caption:
 
 ## Add videos
 
-Self-hosted file (mp4). It fills the card, keeps its own shape, and plays on its own, muted and looping. A `poster` image is the still frame shown before the first frame. People who prefer less motion get that still frame until they press Play:
+Self-hosted file (mp4, mov, or webm). It fills the card, keeps its own shape, and plays on its own, muted and looping. A speaker button at the bottom right of the card turns sound on for that video and mutes any other video that is playing. Tap it again to mute. A `poster` image is optional and is the still frame shown before playback. Leave it out and the card uses the opening frame instead. People who prefer less motion get a still frame until they press Play:
 
 ```json
 {
