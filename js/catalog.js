@@ -32,6 +32,8 @@ export function filesFromContents(data) {
     const type = IMAGE_EXT.has(ext) ? "image" : VIDEO_EXT.has(ext) ? "video" : "";
     if (!type) continue;
     const path = typeof entry.path === "string" && entry.path ? entry.path : `${ART_DIR}/${name}`;
+    const folder = path.replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\/+/, "").toLowerCase();
+    if (folder !== ART_DIR && !folder.startsWith(`${ART_DIR}/`)) continue;
     const download = typeof entry.download_url === "string" ? entry.download_url : "";
     files.push({ name, path, type, download });
   }
