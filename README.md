@@ -1,6 +1,6 @@
 # Janice.SI
 
-Personal site for Janice SI: a centered page on black, with her photo and a scrolling feed of AI art and videos.
+Personal site for Janice SI: a centered page on black, with her name and a scrolling feed of AI art and videos.
 
 Images and videos in `assets/art` show up on their own. `content/feed.json` is optional: use it for captions, order, alt text, and YouTube, TikTok, or Instagram links. The site does not import posts from X or anywhere else.
 
@@ -43,7 +43,7 @@ Image, with an optional caption:
 
 ## Add videos
 
-Self-hosted file (mp4). It stays muted until a visitor turns sound on, and it does not play until they press Play:
+Self-hosted file (mp4). It fills the card, keeps its own shape, and plays on its own, muted and looping. A `poster` image is the still frame shown before the first frame. People who prefer less motion get that still frame until they press Play:
 
 ```json
 {
@@ -73,10 +73,9 @@ YouTube, TikTok, and Instagram play inline from a URL. Use a link to the video i
 
 The feed shows a few cards at a time and loads more as you scroll. After the list has been shown, it repeats once. With nothing in `assets/art` and an empty `items` list, visitors see the header only. The **+** card, and the short note under it, appear only in edit mode.
 
-## Change the name and photo
+## Change the name
 
-- The big title and the line under it are in `index.html` (`Janice SI` and `Hi nice to meet you all 🫶🏻`).
-- The portrait is `assets/janice-avatar.jpg` (her profile photo). Replace that file, or change the `src` on the avatar image. Keep useful `alt` text.
+- The big title and the line under it are in `index.html` (`Janice SI` and `Hi nice to meet you all 🫶🏻`). The title is Inter Black. There is no profile photo.
 
 ## Deploy on GitHub Pages
 

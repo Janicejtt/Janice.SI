@@ -1,4 +1,13 @@
 {
   "note": "Optional. Images and videos uploaded to assets/art appear on their own. Use items to set order, captions, and alt text, or to add a YouTube, TikTok, or Instagram video by URL. The site does not import posts from X.",
-  "items": []
+  "items": [
+    {
+      "type": "video",
+      "src": "assets/art/janice-art-01.mp4",
+      "poster": "assets/art/janice-art-01.jpg",
+      "width": 784,
+      "height": 1168,
+      "alt": "Video artwork by Janice SI"
+    }
+  ]
 }

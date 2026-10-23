@@ -34,6 +34,12 @@ function resource(value) {
   return trimmed;
 }
 
+function positiveInt(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return "";
+  return String(Math.round(number));
+}
+
 function normalize(raw) {
   if (!raw || typeof raw !== "object") return null;
   const type = text(raw.type).toLowerCase();
@@ -47,6 +53,8 @@ function normalize(raw) {
     caption: text(raw.caption),
     alt: text(raw.alt),
     download: "",
+    width: positiveInt(raw.width),
+    height: positiveInt(raw.height),
   };
   if ((type === "image" || type === "video") && !item.src && !item.url) return null;
   if (!item.alt) item.alt = item.caption || "Artwork by Janice SI";
@@ -205,35 +213,47 @@ function renderImage(item, eager) {
   return button;
 }
 
-function renderFileVideo(item) {
+function renderFileVideo(item, eager) {
   const src = locationOf(item);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const video = el("video", null, {
     src,
     poster: item.poster || undefined,
-    preload: "none",
+    preload: eager && !reduceMotion ? "auto" : "metadata",
     playsinline: "",
     muted: "",
-    width: "640",
-    height: "800",
+    loop: "",
+    autoplay: reduceMotion ? false : "",
+    width: item.width || undefined,
+    height: item.height || undefined,
   });
   video.muted = true;
+  video.defaultMuted = true;
   video.playsInline = true;
+  video.loop = true;
+  video.setAttribute("aria-label", item.alt);
   useDownloadOnError(video, item);
   const button = playButton(`Play video: ${item.alt}`);
-  button.addEventListener("click", () => {
-    stopOtherMedia(video);
+  const start = () => {
     video.muted = true;
-    video.controls = true;
     button.hidden = true;
-    video.closest(".card-media")?.classList.add("is-playing");
-    video.play().catch(() => {
-      video.controls = true;
-    });
-  });
-  video.addEventListener("ended", () => {
-    button.hidden = false;
-    video.controls = false;
-  });
+    const pending = video.play();
+    if (pending && typeof pending.catch === "function") {
+      pending.catch(() => {
+        button.hidden = false;
+      });
+    }
+  };
+  button.addEventListener("click", start);
+  if (reduceMotion) {
+    video.autoplay = false;
+    video.removeAttribute("autoplay");
+  } else {
+    video.autoplay = true;
+    button.hidden = true;
+    if (video.readyState >= 2) start();
+    else video.addEventListener("loadeddata", start, { once: true });
+  }
   return [video, button];
 }
 
@@ -280,7 +300,8 @@ function renderCard(item, index, loop) {
   if (item.type === "image") {
     media.append(renderImage(item, index < 2));
   } else if (item.type === "video") {
-    media.append(...renderFileVideo(item));
+    media.classList.add("is-video");
+    media.append(...renderFileVideo(item, index < 2));
   } else {
     media.append(...renderEmbed(item));
   }

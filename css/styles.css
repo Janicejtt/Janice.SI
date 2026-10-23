@@ -202,7 +202,7 @@ a {
   z-index: 1;
   width: min(100% - 2rem, var(--column));
   margin: 0 auto;
-  padding: 1.5rem 0 calc(2.75rem + env(safe-area-inset-bottom));
+  padding: clamp(3.25rem, 10vh, 5.75rem) 0 calc(2.75rem + env(safe-area-inset-bottom));
 }
 
 .profile {
@@ -210,24 +210,10 @@ a {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-top: 0.75rem;
-}
-
-.avatar {
-  width: min(74vw, 18.5rem);
-  height: auto;
-  aspect-ratio: 1;
-  object-fit: cover;
-  object-position: center 42%;
-  border-radius: 58% 42% 52% 48% / 46% 54% 46% 54%;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.16),
-    0 22px 48px rgba(0, 0, 0, 0.55);
-  background: #111;
 }
 
 h1 {
-  margin: 1.15rem 0 0;
+  margin: 0;
   color: #fff;
   font-family: Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: clamp(3.15rem, 12vw, 4.5rem);
@@ -281,6 +267,10 @@ h1 {
   aspect-ratio: 4 / 5;
 }
 
+.card-media.is-video {
+  aspect-ratio: auto;
+}
+
 .card-media img,
 .card-media video,
 .card-media iframe {
@@ -290,6 +280,12 @@ h1 {
   object-fit: cover;
   border: 0;
   background: #0a0a0a;
+}
+
+.card-media.is-video video {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .zoom {
@@ -528,21 +524,9 @@ h1 {
   text-wrap: balance;
 }
 
-@media (min-width: 720px) {
-  .page {
-    padding-top: 2.4rem;
-  }
-
-  .avatar {
-    width: 18.5rem;
-    height: auto;
-  }
-}
-
 @media (forced-colors: active) {
   .card-media,
   .caption,
-  .avatar,
   .add-link {
     border: 1px solid CanvasText;
   }
