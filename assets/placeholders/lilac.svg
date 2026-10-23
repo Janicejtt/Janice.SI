@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img">
+  <title>Placeholder artwork</title>
+  <rect width="800" height="1000" fill="#ead9f6"/>
+  <circle cx="180" cy="300" r="250" fill="#c9b0ea"/>
+<circle cx="540" cy="700" r="340" fill="#fbf7ff"/>
+<circle cx="430" cy="480" r="130" fill="#8d6cc4"/>
+  <rect x="28" y="28" width="186" height="48" rx="24" fill="#ffffff"/>
+  <text x="121" y="59" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#2c1a22">Placeholder</text>
+</svg>
