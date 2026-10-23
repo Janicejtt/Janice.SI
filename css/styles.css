@@ -9,7 +9,7 @@
   --glass-line: rgba(255, 255, 255, 0.22);
   --shadow: 0 18px 40px rgba(12, 0, 10, 0.32);
   --column: 32rem;
-  --font: Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font: Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 *,
@@ -215,22 +215,23 @@ a {
 h1 {
   margin: 0;
   color: #fff;
-  font-family: Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font);
   font-size: clamp(3.15rem, 12vw, 4.5rem);
-  font-weight: 900;
+  font-weight: 400;
   font-synthesis: none;
-  letter-spacing: -0.05em;
+  letter-spacing: normal;
   line-height: 0.9;
   text-wrap: balance;
 }
 
 .tagline {
   margin: 0.55rem 0 0;
-  color: rgba(255, 255, 255, 0.78);
-  font-family: Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: #fff;
+  font-family: var(--font);
   font-size: 1.05rem;
   font-weight: 400;
-  letter-spacing: -0.011em;
+  letter-spacing: normal;
+  text-transform: none;
   line-height: 1.35;
 }
 

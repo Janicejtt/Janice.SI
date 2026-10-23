@@ -75,7 +75,7 @@ Each piece is shown once, in the order of `content/feed.json`. Files in `assets/
 
 ## Change the name
 
-- The big title and the line under it are in `index.html` (`Janice SI` and `Welcome to my SI`). The title is Inter Black. There is no profile photo.
+- The big title and the line under it are in `index.html` (`Janice SI` and `Welcome to my art SI`). The title is Roboto Regular. There is no profile photo.
 
 ## Deploy on GitHub Pages
 
