@@ -1,1 +1,1 @@
-# janicewebsite
+# Janice.SI
