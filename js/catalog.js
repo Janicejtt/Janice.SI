@@ -12,6 +12,7 @@ export const CONTENTS_URL =
 const IMAGE_EXT = new Set(["avif", "gif", "jpeg", "jpg", "png", "svg", "webp"]);
 const VIDEO_EXT = new Set(["m4v", "mov", "mp4", "webm"]);
 const OFF_VALUES = new Set(["0", "false", "no", "off"]);
+const POSTER_NAME = /-poster\.[^.]+$/i;
 
 export function wantsEdit(search) {
   const params = new URLSearchParams(search || "");
@@ -26,7 +27,7 @@ export function filesFromContents(data) {
   for (const entry of data) {
     if (!entry || entry.type !== "file") continue;
     const name = typeof entry.name === "string" ? entry.name : "";
-    if (!name || name.startsWith(".")) continue;
+    if (!name || name.startsWith(".") || POSTER_NAME.test(name)) continue;
     const ext = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1).toLowerCase() : "";
     const type = IMAGE_EXT.has(ext) ? "image" : VIDEO_EXT.has(ext) ? "video" : "";
     if (!type) continue;
@@ -37,45 +38,77 @@ export function filesFromContents(data) {
   return files;
 }
 
-function fileName(value) {
+export function mediaKey(value) {
   const raw = typeof value === "string" ? value.trim() : "";
-  if (!raw) return "";
-  let path = raw.split("#")[0].split("?")[0];
+  if (!raw || /^(javascript|data|vbscript):/i.test(raw)) return "";
+  let path = raw.split("#")[0].split("?")[0].replace(/\\/g, "/");
   try {
     path = new URL(raw, "https://example.invalid/").pathname;
   } catch {
     /* keep the trimmed path */
   }
-  const parts = path.split("/").filter(Boolean);
-  const last = parts[parts.length - 1] || "";
+  path = path.replace(/\\/g, "/").replace(/^\.\//, "").replace(/^\/+/, "");
   try {
-    return decodeURIComponent(last).toLowerCase();
+    path = decodeURIComponent(path);
   } catch {
-    return last.toLowerCase();
+    /* keep the encoded path */
   }
+  return path.toLowerCase();
+}
+
+function fileStem(name) {
+  const base = (name || "").toLowerCase();
+  const dot = base.lastIndexOf(".");
+  return dot > 0 ? base.slice(0, dot) : base;
+}
+
+function isPosterFile(file, posterKeys) {
+  const name = file.name || "";
+  if (POSTER_NAME.test(name)) return true;
+  const key = mediaKey(file.path || name);
+  return Boolean(key && posterKeys.has(key));
 }
 
 export function mergeArt(feedItems, files) {
-  const byName = new Map();
-  for (const file of files) byName.set(file.name.toLowerCase(), file);
-  const used = new Set();
+  const posterKeys = new Set();
+  const videoStems = new Set();
+  for (const item of feedItems) {
+    const poster = mediaKey(item.poster);
+    if (poster) posterKeys.add(poster);
+    if (item.type === "video") {
+      const stem = fileStem(item.src || item.url);
+      if (stem) videoStems.add(stem.split("/").pop());
+    }
+  }
+  for (const file of files) {
+    if (file.type === "video") videoStems.add(fileStem(file.name));
+  }
+  const byPath = new Map();
+  for (const file of files) {
+    const key = mediaKey(file.path || file.name);
+    if (!key || isPosterFile(file, posterKeys)) continue;
+    if (file.type === "image" && videoStems.has(fileStem(file.name))) continue;
+    byPath.set(key, file);
+  }
   const merged = [];
   for (const item of feedItems) {
     const next = { ...item };
     if (next.type === "image" || next.type === "video") {
-      const name = fileName(next.src || next.url);
-      const file = name ? byName.get(name) : undefined;
+      const key = mediaKey(next.src || next.url);
+      const file = key ? byPath.get(key) : undefined;
       if (file) {
-        used.add(file.name.toLowerCase());
         if (!next.src) next.src = file.path;
         if (file.download) next.download = file.download;
+        byPath.delete(key);
+      } else if (key) {
+        byPath.delete(key);
       }
     }
     merged.push(next);
   }
-  const extras = files
-    .filter((file) => !used.has(file.name.toLowerCase()))
-    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }));
+  const extras = [...byPath.values()].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" })
+  );
   for (const file of extras) {
     merged.push({
       type: file.type,
