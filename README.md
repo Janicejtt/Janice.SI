@@ -2,7 +2,7 @@
 
 Personal site for Janice SI: a centered page with her photo, a scrolling feed of AI art and videos, and social links at the bottom.
 
-The art on the page comes only from `content/feed.json`. The site does not import posts from X or anywhere else.
+Images and videos in `assets/art` show up on their own. `content/feed.json` is optional: use it for captions, order, alt text, and YouTube, TikTok, or Instagram links. The site does not import posts from X or anywhere else.
 
 ## Preview locally
 
@@ -16,9 +16,19 @@ Open [http://localhost:8080](http://localhost:8080).
 
 ## Add art
 
-Edit `content/feed.json`. Each object in `items` is one card, top to bottom.
+On the live site, open [https://janicejtt.github.io/Janice.SI/?edit](https://janicejtt.github.io/Janice.SI/?edit). Locally that is [http://localhost:8080/?edit](http://localhost:8080/?edit).
 
-Image:
+The page remembers edit mode in this browser. A card with a large **+** appears when the feed is empty, and again as the last card once there is art. Visitors never see it. To hide it, open the same address with `?edit=off` (for example `https://janicejtt.github.io/Janice.SI/?edit=off`).
+
+Click **+**. It opens GitHub’s upload page for `assets/art` in a new tab:
+
+[https://github.com/Janicejtt/Janice.SI/upload/main/assets/art](https://github.com/Janicejtt/Janice.SI/upload/main/assets/art)
+
+Upload images (jpg, png, gif, webp, avif, svg) or videos (mp4, webm, mov). Commit the upload. You do not have to edit a JSON file for those files to appear. The site asks GitHub for the list of files in that folder and adds any that are not already in the feed. GitHub Pages can take a minute to publish the file; until then the picture is loaded from GitHub directly.
+
+`content/feed.json` is still there when you want more control. Entries in `items` keep their order. New uploads that are not listed there are added after them, by file name. Leave `items` as `[]` if the folder order is enough.
+
+Image, with an optional caption:
 
 ```json
 {
@@ -29,11 +39,7 @@ Image:
 }
 ```
 
-Put the file in the repo (for example `assets/art/`) and use a path relative to `index.html`. `caption` can be left out. `full` is optional and is what opens in the full-size view; when it is missing, the site uses `src`.
-
-`alt` should describe the picture. Do not leave it empty.
-
-Delete the placeholder entries when you add real work. The shipped cards are marked **Placeholder** and are not real piece titles.
+`caption` can be left out. `full` is optional and is what opens in the full-size view; when it is missing, the site uses `src`. `alt` should describe the picture. Files that are only picked up from the folder use “Artwork by Janice SI” until you add an `alt`.
 
 ## Add videos
 
@@ -65,7 +71,7 @@ YouTube, TikTok, and Instagram play inline from a URL. Use a link to the video i
 
 `src` works in place of `url` if you prefer one field. Short TikTok links (`vm.tiktok.com`) cannot be embedded; use the full `tiktok.com/@name/video/…` link.
 
-The feed shows a few cards at a time and loads more as you scroll. After the list has been shown, it repeats once, then the social links appear.
+The feed shows a few cards at a time and loads more as you scroll. After the list has been shown, it repeats once, then the social links appear. With nothing in `assets/art` and an empty `items` list, visitors see the header and the social links only.
 
 ## Change the name, photo, and links
 

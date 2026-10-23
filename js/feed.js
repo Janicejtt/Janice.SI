@@ -1,7 +1,11 @@
+import { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } from "./catalog.js";
 import { embedFor } from "./media.js";
 
 const BATCH = 2;
 const EXTRA_LOOPS = 1;
+const CACHE_KEY = "janice.si.art";
+const CACHE_MS = 120_000;
+const EDIT_KEY = "janice.si.edit";
 const TYPES = new Set(["image", "video", "youtube", "tiktok", "instagram"]);
 
 const feed = document.querySelector("#feed");
@@ -21,6 +25,7 @@ let opener = null;
 let observer = null;
 let jumpToSocial = false;
 let finished = false;
+const editMode = readEditMode();
 
 function text(value) {
   return typeof value === "string" ? value.trim() : "";
@@ -44,10 +49,59 @@ function normalize(raw) {
     full: resource(raw.full),
     caption: text(raw.caption),
     alt: text(raw.alt),
+    download: "",
   };
   if ((type === "image" || type === "video") && !item.src && !item.url) return null;
   if (!item.alt) item.alt = item.caption || "Artwork by Janice SI";
   return item;
+}
+
+function readEditMode() {
+  let stored = "";
+  try {
+    stored = localStorage.getItem(EDIT_KEY) || "";
+  } catch {
+    stored = "";
+  }
+  const requested = wantsEdit(location.search);
+  if (requested === null) return stored === "1";
+  try {
+    if (requested) localStorage.setItem(EDIT_KEY, "1");
+    else localStorage.removeItem(EDIT_KEY);
+  } catch {
+    /* private mode still honors this visit */
+  }
+  return requested;
+}
+
+function readCache() {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (!cached || !Array.isArray(cached.files)) return null;
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+async function listRepoArt() {
+  const cached = readCache();
+  if (cached && Date.now() - cached.at < CACHE_MS) return cached.files;
+  try {
+    const response = await fetch(CONTENTS_URL);
+    if (!response.ok) throw new Error(String(response.status));
+    const files = filesFromContents(await response.json());
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), files }));
+    } catch {
+      /* ignore quota or private mode */
+    }
+    return files;
+  } catch {
+    return cached ? cached.files : [];
+  }
 }
 
 function locationOf(item) {
@@ -81,13 +135,12 @@ function playButton(label) {
   return button;
 }
 
-function placeholderPoster(kind) {
+function platformPoster(kind) {
   const poster = el("div", `poster poster-${kind}`);
-  const chip = el("span", "chip");
-  chip.textContent = "Placeholder";
   const name = el("p", "kind");
-  name.textContent = kind.charAt(0).toUpperCase() + kind.slice(1);
-  poster.append(chip, name);
+  const labels = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram" };
+  name.textContent = labels[kind] || kind;
+  poster.append(name);
   return poster;
 }
 
@@ -112,6 +165,17 @@ function stopOtherMedia(except) {
   });
 }
 
+function useDownloadOnError(node, item) {
+  node.addEventListener("error", () => {
+    if (item.download && node.dataset.fallback !== "1") {
+      node.dataset.fallback = "1";
+      node.src = item.download;
+      return;
+    }
+    if (node.tagName === "IMG") node.alt = `${item.alt} (image failed to load)`;
+  });
+}
+
 function renderImage(item, eager) {
   const src = locationOf(item);
   const button = el("button", "zoom", { type: "button" });
@@ -125,12 +189,11 @@ function renderImage(item, eager) {
     decoding: "async",
     loading: eager ? "eager" : "lazy",
   });
-  img.addEventListener("error", () => {
-    img.alt = `${item.alt} (image failed to load)`;
-  });
+  useDownloadOnError(img, item);
   button.append(hidden, img);
   button.addEventListener("click", () => {
-    openLightbox(item.full || src, item.alt, item.caption, button);
+    const shown = img.currentSrc || img.src;
+    openLightbox(item.full || shown, item.alt, item.caption, button);
   });
   return button;
 }
@@ -148,6 +211,7 @@ function renderFileVideo(item) {
   });
   video.muted = true;
   video.playsInline = true;
+  useDownloadOnError(video, item);
   const button = playButton(`Play video: ${item.alt}`);
   button.addEventListener("click", () => {
     stopOtherMedia(video);
@@ -198,7 +262,7 @@ function renderEmbed(item) {
     media.querySelector(".media-note")?.remove();
     media.append(frame);
   });
-  return [placeholderPoster(item.type), button];
+  return [platformPoster(item.type), button];
 }
 
 function renderCard(item, index, loop) {
@@ -219,8 +283,27 @@ function renderCard(item, index, loop) {
   return card;
 }
 
+function renderAddCard() {
+  const card = el("article", "card add-card");
+  const link = el("a", "add-link", {
+    href: UPLOAD_URL,
+    target: "_blank",
+    rel: "noopener noreferrer",
+  });
+  link.setAttribute("aria-label", "Add art on GitHub (opens in a new tab)");
+  const plus = el("span", "plus");
+  plus.setAttribute("aria-hidden", "true");
+  plus.textContent = "+";
+  const note = el("p", "add-note");
+  note.textContent =
+    "Upload images or videos into assets/art. They show up here on their own. Use content/feed.json for a caption, the order, or a YouTube, TikTok, or Instagram link.";
+  link.append(plus);
+  card.append(link, note);
+  return card;
+}
+
 function appendBatch() {
-  if (cursor >= total) return false;
+  if (!items.length || cursor >= total) return false;
   const fragment = document.createDocumentFragment();
   let added = 0;
   while (added < BATCH && cursor < total) {
@@ -243,8 +326,9 @@ function finish() {
   if (finished) return;
   finished = true;
   observer?.disconnect();
+  if (editMode && sentinel.isConnected) feed.insertBefore(renderAddCard(), sentinel);
   if (sentinel.isConnected) sentinel.remove();
-  endNote.hidden = false;
+  endNote.hidden = items.length === 0;
   footer.hidden = false;
   if (jumpToSocial) {
     jumpToSocial = false;
@@ -274,6 +358,10 @@ function showError(message) {
   statusEl.classList.remove("visually-hidden");
   statusEl.textContent = message;
   footer.hidden = false;
+  endNote.hidden = true;
+  if (editMode && sentinel.isConnected) feed.insertBefore(renderAddCard(), sentinel);
+  if (sentinel.isConnected) sentinel.remove();
+  finished = true;
 }
 
 function openLightbox(src, alt, caption, button) {
@@ -316,30 +404,44 @@ document.addEventListener("keydown", (event) => {
 
 skipSocial.addEventListener("click", (event) => {
   event.preventDefault();
+  if (finished) {
+    document.querySelector("#social-links")?.focus();
+    return;
+  }
   jumpToSocial = true;
   if (!items.length) return;
   while (cursor < total) appendBatch();
   finish();
 });
 
+async function loadFeedFile() {
+  const response = await fetch("content/feed.json");
+  if (!response.ok) throw new Error(String(response.status));
+  return response.json();
+}
+
 async function init() {
-  let payload;
+  let payload = null;
+  let feedFailed = false;
   try {
-    const response = await fetch("content/feed.json");
-    if (!response.ok) throw new Error(String(response.status));
-    payload = await response.json();
+    payload = await loadFeedFile();
   } catch {
+    feedFailed = true;
+  }
+  const files = await listRepoArt();
+  if (feedFailed && files.length === 0) {
     showError("The art feed could not be loaded. Check content/feed.json and open the site from a local server.");
     return;
   }
-  const rawItems = Array.isArray(payload) ? payload : payload.items;
-  items = (rawItems || []).map(normalize).filter(Boolean);
+  const rawItems = payload == null ? [] : Array.isArray(payload) ? payload : payload.items;
+  const feedItems = (rawItems || []).map(normalize).filter(Boolean);
+  items = mergeArt(feedItems, files);
+  statusEl.textContent = items.length ? "Art feed ready." : "";
   if (!items.length) {
-    showError("No art yet. Add items to content/feed.json.");
+    finish();
     return;
   }
   total = items.length * (1 + EXTRA_LOOPS);
-  statusEl.textContent = "Art feed ready.";
   if (jumpToSocial) {
     while (cursor < total) appendBatch();
     finish();

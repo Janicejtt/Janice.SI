@@ -1,10 +1,13 @@
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   --ink: #2c1a22;
-  --ink-soft: #5c3a48;
   --paper: #ffffff;
-  --focus: #6d2744;
-  --shadow: 0 12px 32px rgba(90, 40, 60, 0.1);
+  --text: #ffffff;
+  --text-soft: rgba(255, 255, 255, 0.92);
+  --focus: #ffffff;
+  --glass: rgba(18, 8, 14, 0.46);
+  --glass-line: rgba(255, 255, 255, 0.22);
+  --shadow: 0 18px 40px rgba(12, 0, 10, 0.32);
   --column: 32rem;
   --font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
@@ -16,19 +19,17 @@
 }
 
 html {
-  background: #f3d0e2;
+  background: #241018;
 }
 
 body {
   margin: 0;
   min-height: 100%;
-  color: var(--ink);
+  color: var(--text);
   font-family: var(--font);
   font-size: 1.0625rem;
   line-height: 1.45;
-  background:
-    radial-gradient(72rem 36rem at 50% -8%, rgba(255, 255, 255, 0.92), transparent 58%),
-    linear-gradient(180deg, #fff7f4 0%, #f8d7e4 36%, #f0c6de 68%, #ead6f6 100%);
+  background: #241018;
 }
 
 img,
@@ -52,6 +53,11 @@ a {
   outline-offset: 3px;
 }
 
+::selection {
+  background: rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -66,6 +72,105 @@ a {
 
 [hidden] {
   display: none !important;
+}
+
+.marfa {
+  position: fixed;
+  z-index: 0;
+  inset: -55vmax;
+  overflow: hidden;
+  pointer-events: none;
+  background: #2a1020;
+  animation: marfa-spin 22s linear infinite;
+}
+
+.marfa-blob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  filter: blur(72px);
+  will-change: transform;
+}
+
+.marfa-violet {
+  width: 82vmax;
+  height: 82vmax;
+  margin-left: -62vmax;
+  margin-top: -64vmax;
+  background: radial-gradient(circle, #a020b0 0%, rgba(160, 32, 176, 0.78) 48%, transparent 72%);
+  animation: drift-violet 20s ease-in-out infinite;
+}
+
+.marfa-magenta {
+  width: 74vmax;
+  height: 74vmax;
+  margin-left: -12vmax;
+  margin-top: -52vmax;
+  background: radial-gradient(circle, #b84a8a 0%, rgba(184, 74, 138, 0.72) 48%, transparent 74%);
+  animation: drift-magenta 18s ease-in-out infinite;
+}
+
+.marfa-amber {
+  width: 66vmax;
+  height: 66vmax;
+  margin-left: -6vmax;
+  margin-top: -10vmax;
+  background: radial-gradient(circle, #c8902e 0%, rgba(200, 144, 46, 0.66) 44%, transparent 72%);
+  animation: drift-amber 24s ease-in-out infinite;
+}
+
+.marfa-terra {
+  width: 62vmax;
+  height: 62vmax;
+  margin-left: -54vmax;
+  margin-top: -8vmax;
+  background: radial-gradient(circle, #b07060 0%, rgba(176, 112, 96, 0.74) 46%, transparent 74%);
+  animation: drift-terra 16s ease-in-out infinite;
+}
+
+.marfa-beige {
+  width: 44vmax;
+  height: 44vmax;
+  margin-left: 10vmax;
+  margin-top: 6vmax;
+  background: radial-gradient(circle, #c8b0a0 0%, rgba(200, 176, 160, 0.62) 42%, transparent 70%);
+  animation: drift-beige 21s ease-in-out infinite;
+}
+
+@keyframes marfa-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes drift-violet {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(10%, 8%) scale(1.08); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes drift-magenta {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-12%, 10%) scale(1.12); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes drift-amber {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-8%, -12%) scale(1.06); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes drift-terra {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(14%, -8%) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes drift-beige {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10%, -14%) scale(1.14); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
 .skip-links {
@@ -97,6 +202,8 @@ a {
 }
 
 .page {
+  position: relative;
+  z-index: 1;
   width: min(100% - 2rem, var(--column));
   margin: 0 auto;
   padding: 1.5rem 0 calc(2.75rem + env(safe-area-inset-bottom));
@@ -117,24 +224,27 @@ a {
   object-fit: cover;
   object-position: center 42%;
   border-radius: 58% 42% 52% 48% / 46% 54% 46% 54%;
-  box-shadow: 0 16px 40px rgba(120, 50, 80, 0.16);
-  background: #f3d0d8;
+  box-shadow: 0 18px 42px rgba(12, 0, 16, 0.38);
+  background: #3a1830;
 }
 
 h1 {
   margin: 1.35rem 0 0;
+  color: #fff;
   font-size: clamp(2.4rem, 8vw, 3.15rem);
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.05;
   text-wrap: balance;
+  text-shadow: 0 2px 18px rgba(20, 0, 16, 0.45);
 }
 
 .tagline {
   margin: 0.4rem 0 0;
-  color: var(--ink-soft);
+  color: var(--text-soft);
   font-size: 1rem;
   letter-spacing: 0.01em;
+  text-shadow: 0 1px 12px rgba(20, 0, 16, 0.4);
 }
 
 .feed {
@@ -145,13 +255,17 @@ h1 {
   margin: 0 0 1.35rem;
 }
 
-.card-media {
+.card-media,
+.add-link {
   position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: 1.6rem;
-  background: rgba(255, 255, 255, 0.45);
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .card-media[data-ratio="youtube"] {
@@ -175,7 +289,7 @@ h1 {
   height: 100%;
   object-fit: cover;
   border: 0;
-  background: #f7e4ea;
+  background: #2a1422;
 }
 
 .zoom {
@@ -199,23 +313,25 @@ h1 {
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
   padding: 1.15rem;
+  color: #fff;
   background:
-    radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.7), transparent 42%),
-    linear-gradient(165deg, #f7c9d8, #e7b7e6);
+    radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.28), transparent 42%),
+    linear-gradient(165deg, rgba(160, 32, 176, 0.72), rgba(42, 16, 32, 0.35));
 }
 
 .poster-tiktok {
   background:
-    radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.65), transparent 40%),
-    linear-gradient(165deg, #d9f3ee, #f7c6df);
+    radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.22), transparent 40%),
+    linear-gradient(165deg, rgba(184, 74, 138, 0.7), rgba(36, 14, 24, 0.35));
 }
 
 .poster-instagram {
   background:
-    radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.6), transparent 42%),
-    linear-gradient(165deg, #ffe3d4, #f3c4de);
+    radial-gradient(circle at 30% 70%, rgba(255, 220, 180, 0.28), transparent 46%),
+    linear-gradient(165deg, rgba(200, 144, 46, 0.55), rgba(176, 112, 96, 0.45));
 }
 
 .chip {
@@ -232,9 +348,11 @@ h1 {
 
 .kind {
   margin: 0;
+  color: #fff;
   font-size: clamp(1.6rem, 5vw, 2rem);
   font-weight: 700;
   letter-spacing: -0.03em;
+  text-shadow: 0 2px 14px rgba(20, 0, 16, 0.35);
 }
 
 .play-btn {
@@ -259,7 +377,7 @@ h1 {
   background: var(--paper);
   color: var(--ink);
   font-weight: 700;
-  box-shadow: 0 10px 24px rgba(40, 10, 20, 0.16);
+  box-shadow: 0 10px 24px rgba(12, 0, 10, 0.28);
 }
 
 .play-btn:hover .play-pill,
@@ -288,13 +406,46 @@ h1 {
   margin: -1.4rem 0.8rem 0;
   padding: 0.9rem 1rem;
   border-radius: 1.15rem;
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--ink);
+  background: rgba(22, 10, 16, 0.58);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   font-weight: 700;
   text-align: center;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  box-shadow: 0 8px 22px rgba(80, 30, 50, 0.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.add-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-decoration: none;
+}
+
+.add-link:hover,
+.add-link:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.plus {
+  font-size: 5rem;
+  font-weight: 300;
+  line-height: 0.8;
+  text-shadow: 0 2px 16px rgba(20, 0, 16, 0.35);
+}
+
+.add-note {
+  margin: 0.85rem 0.35rem 0;
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: 0 1px 10px rgba(20, 0, 16, 0.35);
 }
 
 .loop-note,
@@ -302,8 +453,9 @@ h1 {
 .status {
   margin: 0.4rem 0 1.3rem;
   text-align: center;
-  color: var(--ink-soft);
+  color: var(--text-soft);
   font-size: 0.92rem;
+  text-shadow: 0 1px 10px rgba(20, 0, 16, 0.35);
 }
 
 .site-footer {
@@ -313,9 +465,11 @@ h1 {
 .site-footer h2 {
   margin: 0 0 0.85rem;
   text-align: center;
+  color: #fff;
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.12em;
+  text-shadow: 0 1px 12px rgba(20, 0, 16, 0.4);
 }
 
 .socials {
@@ -331,15 +485,18 @@ h1 {
   min-height: 3rem;
   padding: 0.75rem 1rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--ink);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  color: #fff;
   text-decoration: none;
   font-weight: 700;
   box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .socials a:hover {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 #lightbox[open] {
@@ -357,7 +514,7 @@ h1 {
 }
 
 #lightbox::backdrop {
-  background: rgba(28, 16, 22, 0.84);
+  background: rgba(16, 6, 12, 0.84);
 }
 
 .lightbox-close {
@@ -391,7 +548,7 @@ h1 {
   height: auto;
   object-fit: contain;
   border-radius: 1.1rem;
-  background: #fff;
+  background: #1a1016;
 }
 
 #lightbox-caption {
@@ -418,12 +575,18 @@ h1 {
   .card-media,
   .caption,
   .socials a,
-  .avatar {
+  .avatar,
+  .add-link {
     border: 1px solid CanvasText;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .marfa,
+  .marfa-blob {
+    animation: none;
+  }
+
   .play-btn:hover .play-pill,
   .play-btn:focus-visible .play-pill {
     transform: none;
