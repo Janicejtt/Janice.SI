@@ -1,6 +1,6 @@
 # Janice.SI
 
-Personal site for Janice SI: a centered page with her photo, a scrolling feed of AI art and videos, and social links at the bottom.
+Personal site for Janice SI: a centered page on black, with her photo and a scrolling feed of AI art and videos.
 
 Images and videos in `assets/art` show up on their own. `content/feed.json` is optional: use it for captions, order, alt text, and YouTube, TikTok, or Instagram links. The site does not import posts from X or anywhere else.
 
@@ -71,13 +71,12 @@ YouTube, TikTok, and Instagram play inline from a URL. Use a link to the video i
 
 `src` works in place of `url` if you prefer one field. Short TikTok links (`vm.tiktok.com`) cannot be embedded; use the full `tiktok.com/@name/video/…` link.
 
-The feed shows a few cards at a time and loads more as you scroll. After the list has been shown, it repeats once, then the social links appear. With nothing in `assets/art` and an empty `items` list, visitors see the header and the social links only.
+The feed shows a few cards at a time and loads more as you scroll. After the list has been shown, it repeats once. With nothing in `assets/art` and an empty `items` list, visitors see the header only. The **+** card, and the short note under it, appear only in edit mode.
 
-## Change the name, photo, and links
+## Change the name and photo
 
 - The big title and the line under it are in `index.html` (`Janice SI` and `Hi nice to meet you all 🫶🏻`).
 - The portrait is `assets/janice-avatar.jpg` (her profile photo). Replace that file, or change the `src` on the avatar image. Keep useful `alt` text.
-- Social buttons are the four links in the footer of `index.html`.
 
 ## Deploy on GitHub Pages
 

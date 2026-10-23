@@ -19,7 +19,7 @@
 }
 
 html {
-  background: #241018;
+  background: #0a0a0a;
 }
 
 body {
@@ -29,7 +29,7 @@ body {
   font-family: var(--font);
   font-size: 1.0625rem;
   line-height: 1.45;
-  background: #241018;
+  background: #0a0a0a;
 }
 
 img,
@@ -75,66 +75,62 @@ a {
 }
 
 .marfa {
-  position: fixed;
+  position: absolute;
   z-index: 0;
-  inset: -55vmax;
-  overflow: hidden;
+  inset: -42%;
   pointer-events: none;
-  background: #2a1020;
   animation: marfa-spin 22s linear infinite;
 }
 
 .marfa-blob {
   position: absolute;
-  left: 50%;
-  top: 50%;
   border-radius: 50%;
-  filter: blur(72px);
+  filter: blur(34px);
   will-change: transform;
 }
 
 .marfa-violet {
-  width: 82vmax;
-  height: 82vmax;
-  margin-left: -62vmax;
-  margin-top: -64vmax;
-  background: radial-gradient(circle, #a020b0 0%, rgba(160, 32, 176, 0.78) 48%, transparent 72%);
+  width: 72%;
+  height: 72%;
+  left: -6%;
+  top: -8%;
+  background: radial-gradient(circle, #a020b0 0%, rgba(160, 32, 176, 0.9) 50%, transparent 74%);
   animation: drift-violet 20s ease-in-out infinite;
 }
 
 .marfa-magenta {
-  width: 74vmax;
-  height: 74vmax;
-  margin-left: -12vmax;
-  margin-top: -52vmax;
-  background: radial-gradient(circle, #b84a8a 0%, rgba(184, 74, 138, 0.72) 48%, transparent 74%);
+  width: 68%;
+  height: 68%;
+  right: -8%;
+  top: 6%;
+  background: radial-gradient(circle, #b84a8a 0%, rgba(184, 74, 138, 0.88) 48%, transparent 74%);
   animation: drift-magenta 18s ease-in-out infinite;
 }
 
 .marfa-amber {
-  width: 66vmax;
-  height: 66vmax;
-  margin-left: -6vmax;
-  margin-top: -10vmax;
-  background: radial-gradient(circle, #c8902e 0%, rgba(200, 144, 46, 0.66) 44%, transparent 72%);
+  width: 62%;
+  height: 62%;
+  left: 22%;
+  bottom: -12%;
+  background: radial-gradient(circle, #c8902e 0%, rgba(200, 144, 46, 0.86) 46%, transparent 72%);
   animation: drift-amber 24s ease-in-out infinite;
 }
 
 .marfa-terra {
-  width: 62vmax;
-  height: 62vmax;
-  margin-left: -54vmax;
-  margin-top: -8vmax;
-  background: radial-gradient(circle, #b07060 0%, rgba(176, 112, 96, 0.74) 46%, transparent 74%);
+  width: 58%;
+  height: 58%;
+  left: -10%;
+  bottom: -6%;
+  background: radial-gradient(circle, #b07060 0%, rgba(176, 112, 96, 0.9) 48%, transparent 74%);
   animation: drift-terra 16s ease-in-out infinite;
 }
 
 .marfa-beige {
-  width: 44vmax;
-  height: 44vmax;
-  margin-left: 10vmax;
-  margin-top: 6vmax;
-  background: radial-gradient(circle, #c8b0a0 0%, rgba(200, 176, 160, 0.62) 42%, transparent 70%);
+  width: 42%;
+  height: 42%;
+  right: 0;
+  bottom: 4%;
+  background: radial-gradient(circle, #c8b0a0 0%, rgba(200, 176, 160, 0.8) 44%, transparent 72%);
   animation: drift-beige 21s ease-in-out infinite;
 }
 
@@ -224,8 +220,10 @@ a {
   object-fit: cover;
   object-position: center 42%;
   border-radius: 58% 42% 52% 48% / 46% 54% 46% 54%;
-  box-shadow: 0 18px 42px rgba(12, 0, 16, 0.38);
-  background: #3a1830;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 22px 48px rgba(0, 0, 0, 0.55);
+  background: #111;
 }
 
 h1 {
@@ -236,15 +234,13 @@ h1 {
   letter-spacing: -0.035em;
   line-height: 1.05;
   text-wrap: balance;
-  text-shadow: 0 2px 18px rgba(20, 0, 16, 0.45);
 }
 
 .tagline {
   margin: 0.4rem 0 0;
-  color: var(--text-soft);
+  color: rgba(255, 255, 255, 0.78);
   font-size: 1rem;
   letter-spacing: 0.01em;
-  text-shadow: 0 1px 12px rgba(20, 0, 16, 0.4);
 }
 
 .feed {
@@ -255,17 +251,16 @@ h1 {
   margin: 0 0 1.35rem;
 }
 
-.card-media,
-.add-link {
+.card-media {
   position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border-radius: 1.6rem;
-  background: var(--glass);
-  border: 1px solid var(--glass-line);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.5),
+    0 0 32px rgba(176, 80, 140, 0.18);
 }
 
 .card-media[data-ratio="youtube"] {
@@ -289,7 +284,7 @@ h1 {
   height: 100%;
   object-fit: cover;
   border: 0;
-  background: #2a1422;
+  background: #0a0a0a;
 }
 
 .zoom {
@@ -308,6 +303,13 @@ h1 {
   height: 100%;
 }
 
+.poster,
+.marfa-panel {
+  position: relative;
+  overflow: hidden;
+  background: #140810;
+}
+
 .poster {
   position: absolute;
   inset: 0;
@@ -317,21 +319,13 @@ h1 {
   justify-content: center;
   padding: 1.15rem;
   color: #fff;
-  background:
-    radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.28), transparent 42%),
-    linear-gradient(165deg, rgba(160, 32, 176, 0.72), rgba(42, 16, 32, 0.35));
 }
 
-.poster-tiktok {
-  background:
-    radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.22), transparent 40%),
-    linear-gradient(165deg, rgba(184, 74, 138, 0.7), rgba(36, 14, 24, 0.35));
-}
-
-.poster-instagram {
-  background:
-    radial-gradient(circle at 30% 70%, rgba(255, 220, 180, 0.28), transparent 46%),
-    linear-gradient(165deg, rgba(200, 144, 46, 0.55), rgba(176, 112, 96, 0.45));
+.marfa-panel {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  border-radius: 1.25rem;
 }
 
 .chip {
@@ -347,16 +341,19 @@ h1 {
 }
 
 .kind {
+  position: relative;
+  z-index: 1;
   margin: 0;
   color: #fff;
   font-size: clamp(1.6rem, 5vw, 2rem);
   font-weight: 700;
   letter-spacing: -0.03em;
-  text-shadow: 0 2px 14px rgba(20, 0, 16, 0.35);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
 }
 
 .play-btn {
   position: absolute;
+  z-index: 2;
   inset: 0;
   display: grid;
   place-items: center;
@@ -406,9 +403,9 @@ h1 {
   margin: -1.4rem 0.8rem 0;
   padding: 0.9rem 1rem;
   border-radius: 1.15rem;
-  background: rgba(22, 10, 16, 0.58);
+  background: rgba(10, 10, 10, 0.86);
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   font-weight: 700;
   text-align: center;
   text-wrap: balance;
@@ -419,33 +416,41 @@ h1 {
 }
 
 .add-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  padding: 0.5rem;
+  border-radius: 1.8rem;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.32);
   color: #fff;
   text-decoration: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 20px 48px rgba(0, 0, 0, 0.55),
+    0 0 36px rgba(160, 32, 176, 0.2);
 }
 
 .add-link:hover,
 .add-link:focus-visible {
-  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.55);
 }
 
 .plus {
-  font-size: 5rem;
-  font-weight: 300;
+  position: relative;
+  z-index: 1;
+  font-size: 6rem;
+  font-weight: 200;
   line-height: 0.8;
-  text-shadow: 0 2px 16px rgba(20, 0, 16, 0.35);
+  color: #fff;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
 }
 
 .add-note {
-  margin: 0.85rem 0.35rem 0;
-  color: #fff;
-  font-size: 0.95rem;
+  margin: 0.8rem 0.4rem 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.92rem;
   line-height: 1.4;
   text-align: center;
   text-wrap: balance;
-  text-shadow: 0 1px 10px rgba(20, 0, 16, 0.35);
 }
 
 .loop-note,
@@ -453,50 +458,8 @@ h1 {
 .status {
   margin: 0.4rem 0 1.3rem;
   text-align: center;
-  color: var(--text-soft);
+  color: rgba(255, 255, 255, 0.62);
   font-size: 0.92rem;
-  text-shadow: 0 1px 10px rgba(20, 0, 16, 0.35);
-}
-
-.site-footer {
-  padding-top: 0.4rem;
-}
-
-.site-footer h2 {
-  margin: 0 0 0.85rem;
-  text-align: center;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-shadow: 0 1px 12px rgba(20, 0, 16, 0.4);
-}
-
-.socials {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.socials a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 3rem;
-  padding: 0.75rem 1rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  color: #fff;
-  text-decoration: none;
-  font-weight: 700;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-
-.socials a:hover {
-  background: rgba(255, 255, 255, 0.28);
 }
 
 #lightbox[open] {
@@ -514,7 +477,7 @@ h1 {
 }
 
 #lightbox::backdrop {
-  background: rgba(16, 6, 12, 0.84);
+  background: rgba(0, 0, 0, 0.88);
 }
 
 .lightbox-close {
@@ -574,7 +537,6 @@ h1 {
 @media (forced-colors: active) {
   .card-media,
   .caption,
-  .socials a,
   .avatar,
   .add-link {
     border: 1px solid CanvasText;

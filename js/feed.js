@@ -11,19 +11,16 @@ const TYPES = new Set(["image", "video", "youtube", "tiktok", "instagram"]);
 const feed = document.querySelector("#feed");
 const statusEl = document.querySelector("#feed-status");
 const sentinel = document.querySelector("#sentinel");
-const footer = document.querySelector("#site-footer");
 const endNote = document.querySelector("#end-note");
 const lightbox = document.querySelector("#lightbox");
 const lightboxImg = document.querySelector("#lightbox-img");
 const lightboxCaption = document.querySelector("#lightbox-caption");
-const skipSocial = document.querySelector("#skip-social");
 
 let items = [];
 let cursor = 0;
 let total = 0;
 let opener = null;
 let observer = null;
-let jumpToSocial = false;
 let finished = false;
 const editMode = readEditMode();
 
@@ -135,8 +132,18 @@ function playButton(label) {
   return button;
 }
 
+function marfaLayer() {
+  const layer = el("span", "marfa");
+  layer.setAttribute("aria-hidden", "true");
+  for (const name of ["violet", "magenta", "amber", "terra", "beige"]) {
+    layer.append(el("span", `marfa-blob marfa-${name}`));
+  }
+  return layer;
+}
+
 function platformPoster(kind) {
   const poster = el("div", `poster poster-${kind}`);
+  poster.append(marfaLayer());
   const name = el("p", "kind");
   const labels = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram" };
   name.textContent = labels[kind] || kind;
@@ -291,13 +298,14 @@ function renderAddCard() {
     rel: "noopener noreferrer",
   });
   link.setAttribute("aria-label", "Add art on GitHub (opens in a new tab)");
+  const panel = el("span", "marfa-panel");
   const plus = el("span", "plus");
   plus.setAttribute("aria-hidden", "true");
   plus.textContent = "+";
+  panel.append(marfaLayer(), plus);
   const note = el("p", "add-note");
-  note.textContent =
-    "Upload images or videos into assets/art. They show up here on their own. Use content/feed.json for a caption, the order, or a YouTube, TikTok, or Instagram link.";
-  link.append(plus);
+  note.textContent = "New files in assets/art show up on their own.";
+  link.append(panel);
   card.append(link, note);
   return card;
 }
@@ -329,11 +337,6 @@ function finish() {
   if (editMode && sentinel.isConnected) feed.insertBefore(renderAddCard(), sentinel);
   if (sentinel.isConnected) sentinel.remove();
   endNote.hidden = items.length === 0;
-  footer.hidden = false;
-  if (jumpToSocial) {
-    jumpToSocial = false;
-    document.querySelector("#social-links")?.focus();
-  }
 }
 
 function fillAhead() {
@@ -357,7 +360,6 @@ function fillAhead() {
 function showError(message) {
   statusEl.classList.remove("visually-hidden");
   statusEl.textContent = message;
-  footer.hidden = false;
   endNote.hidden = true;
   if (editMode && sentinel.isConnected) feed.insertBefore(renderAddCard(), sentinel);
   if (sentinel.isConnected) sentinel.remove();
@@ -402,18 +404,6 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && lightbox.hasAttribute("open")) closeLightbox();
 });
 
-skipSocial.addEventListener("click", (event) => {
-  event.preventDefault();
-  if (finished) {
-    document.querySelector("#social-links")?.focus();
-    return;
-  }
-  jumpToSocial = true;
-  if (!items.length) return;
-  while (cursor < total) appendBatch();
-  finish();
-});
-
 async function loadFeedFile() {
   const response = await fetch("content/feed.json");
   if (!response.ok) throw new Error(String(response.status));
@@ -442,11 +432,6 @@ async function init() {
     return;
   }
   total = items.length * (1 + EXTRA_LOOPS);
-  if (jumpToSocial) {
-    while (cursor < total) appendBatch();
-    finish();
-    return;
-  }
   observer = new IntersectionObserver(
     (entries) => {
       if (entries.some((entry) => entry.isIntersecting)) fillAhead();
