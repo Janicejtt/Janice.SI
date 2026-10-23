@@ -49,7 +49,7 @@ Self-hosted file (mp4). It fills the card, keeps its own shape, and plays on its
 {
   "type": "video",
   "src": "assets/art/clip.mp4",
-  "poster": "assets/art/clip-poster.jpg",
+  "poster": "assets/posters/clip-poster.jpg",
   "alt": "Describe the video",
   "caption": "Optional caption"
 }
@@ -71,7 +71,7 @@ YouTube, TikTok, and Instagram play inline from a URL. Use a link to the video i
 
 `src` works in place of `url` if you prefer one field. Short TikTok links (`vm.tiktok.com`) cannot be embedded; use the full `tiktok.com/@name/video/…` link.
 
-Each piece is shown once, in the order of `content/feed.json`. Files in `assets/art` that are not listed there are added after those entries. The feed loads a few cards at a time as you scroll. With nothing in `assets/art` and an empty `items` list, visitors see the header only. The **+** card, and the short note under it, appear only in edit mode, after the art.
+Each piece is shown once, in the order of `content/feed.json`. Files in `assets/art` that are not already listed there are added after those entries. A file is matched by its path, so the same picture is not shown twice. Poster images are not art cards: put them in `assets/posters/`. A file named `*-poster.*`, or a still with the same name as a video (`clip.jpg` next to `clip.mp4`), is skipped. The feed loads a few cards at a time as you scroll. With nothing in `assets/art` and an empty `items` list, visitors see the header only. The **+** card, and the short note under it, appear only in edit mode, after the art.
 
 ## Change the name
 
