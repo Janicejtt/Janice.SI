@@ -8,6 +8,38 @@
       "width": 784,
       "height": 1168,
       "alt": "Video artwork by Janice SI"
+    },
+    {
+      "type": "video",
+      "src": "assets/art/janice-art-02.mp4",
+      "poster": "assets/posters/janice-art-02.jpg",
+      "width": 672,
+      "height": 448,
+      "alt": "Video artwork by Janice SI"
+    },
+    {
+      "type": "video",
+      "src": "assets/art/janice-art-03.mp4",
+      "poster": "assets/posters/janice-art-03.jpg",
+      "width": 688,
+      "height": 464,
+      "alt": "Video artwork by Janice SI"
+    },
+    {
+      "type": "video",
+      "src": "assets/art/janice-art-04.mp4",
+      "poster": "assets/posters/janice-art-04.jpg",
+      "width": 672,
+      "height": 448,
+      "alt": "Video artwork by Janice SI"
+    },
+    {
+      "type": "video",
+      "src": "assets/art/janice-art-05.mp4",
+      "poster": "assets/posters/janice-art-05.jpg",
+      "width": 640,
+      "height": 480,
+      "alt": "Video artwork by Janice SI"
     }
   ]
 }
