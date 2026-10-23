@@ -4,7 +4,7 @@ import { embedFor } from "./media.js";
 const BATCH = 2;
 const EXTRA_LOOPS = 1;
 const CACHE_KEY = "janice.si.art";
-const CACHE_MS = 120_000;
+const CACHE_MS = 60_000;
 const EDIT_KEY = "janice.si.edit";
 const TYPES = new Set(["image", "video", "youtube", "tiktok", "instagram"]);
 
@@ -90,7 +90,7 @@ async function listRepoArt() {
   const cached = readCache();
   if (cached && Date.now() - cached.at < CACHE_MS) return cached.files;
   try {
-    const response = await fetch(CONTENTS_URL);
+    const response = await fetch(CONTENTS_URL, { signal: AbortSignal.timeout(4000) });
     if (!response.ok) throw new Error(String(response.status));
     const files = filesFromContents(await response.json());
     try {
