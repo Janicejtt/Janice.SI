@@ -1,4 +1,4 @@
-const VERSION = "20261024l";
+const VERSION = "20261024m";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
@@ -541,11 +541,26 @@ function clearFit(node) {
   if (!node) return;
   node.style.width = "";
   node.style.height = "";
+  node.classList.remove("viewer-cover", "viewer-wide");
+}
+
+const phoneViewerQuery = window.matchMedia("(max-width: 700px) and (orientation: portrait)");
+
+function fitPhoneVideo(node) {
+  clearFit(node);
+  const naturalW = node.videoWidth || Number(node.getAttribute("width")) || 0;
+  const naturalH = node.videoHeight || Number(node.getAttribute("height")) || 0;
+  node.classList.add(naturalH > naturalW && naturalW > 0 ? "viewer-cover" : "viewer-wide");
 }
 
 function fitReplaced(node) {
   const frame = node && node.parentElement;
   if (!frame) return;
+  if (node.tagName === "VIDEO" && node.closest("#viewer") && phoneViewerQuery.matches) {
+    fitPhoneVideo(node);
+    return;
+  }
+  node.classList.remove("viewer-cover", "viewer-wide");
   const frameStyle = getComputedStyle(frame);
   const maxW = frame.clientWidth - parseFloat(frameStyle.paddingLeft) - parseFloat(frameStyle.paddingRight);
   const maxH = frame.clientHeight - parseFloat(frameStyle.paddingTop) - parseFloat(frameStyle.paddingBottom);
@@ -1276,8 +1291,11 @@ async function init() {
 }
 
 paintSpeaker({ muted: false });
-window.addEventListener("resize", () => {
+function refitOpenMedia() {
   if (activeViewerVideo) viewer.querySelectorAll("video").forEach((video) => fitReplaced(video));
   fitLightboxImage();
-});
+}
+
+window.addEventListener("resize", refitOpenMedia);
+phoneViewerQuery.addEventListener("change", refitOpenMedia);
 init();
