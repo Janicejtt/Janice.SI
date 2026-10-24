@@ -328,9 +328,16 @@ function bindSoundChrome(media, button) {
 
 function soundButton(video) {
   const button = el("button", "sound", { type: "button" });
+  const speaker =
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M5.2 8.8H7.8L11.6 5.6V18.4L7.8 15.2H5.2C4.4 15.2 3.8 14.6 3.8 13.8V10.2C3.8 9.4 4.4 8.8 5.2 8.8Z"/>';
   button.innerHTML =
-    '<svg class="sound-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5v-5z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M16 10l4 4m0-4-4 4"/></svg>' +
-    '<svg class="sound-on" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5v-5z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.6 9.2a3.4 3.4 0 0 1 0 5.6M18 7a6.2 6.2 0 0 1 0 10"/></svg>';
+    '<svg class="sound-off" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
+    speaker +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M3 16.8 12.6 4.6"/></svg>' +
+    '<svg class="sound-on" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
+    speaker +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M14.2 9.2a3.6 3.6 0 0 1 0 5.6"/>' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M18.2 8.5a4.6 4.6 0 0 1 0 7"/></svg>';
   const paint = () => {
     const on = !video.muted;
     button.classList.toggle("is-on", on);
