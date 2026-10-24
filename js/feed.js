@@ -275,6 +275,57 @@ function watchPlayback(video) {
   });
 }
 
+const SOUND_VISIBLE_MS = 2500;
+
+function bindSoundChrome(media, button) {
+  let timer = 0;
+  let over = false;
+  button.tabIndex = -1;
+  const hide = () => {
+    button.classList.remove("is-shown");
+    button.tabIndex = -1;
+  };
+  const arm = () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      if (over || button.matches(":hover") || button.matches(":focus-visible")) {
+        arm();
+        return;
+      }
+      hide();
+    }, SOUND_VISIBLE_MS);
+  };
+  const show = () => {
+    if (button.hidden) return;
+    button.classList.add("is-shown");
+    button.tabIndex = 0;
+    if (over) {
+      window.clearTimeout(timer);
+      return;
+    }
+    arm();
+  };
+  media.addEventListener("pointerenter", (event) => {
+    if (event.pointerType === "touch") {
+      show();
+      return;
+    }
+    over = true;
+    show();
+  });
+  media.addEventListener("pointerleave", (event) => {
+    if (event.pointerType === "touch") return;
+    over = false;
+    if (button.classList.contains("is-shown")) arm();
+  });
+  media.addEventListener("click", (event) => {
+    if (event.target.closest && event.target.closest(".sound")) return;
+    show();
+  });
+  button.addEventListener("click", show);
+  button.addEventListener("focus", show);
+}
+
 function soundButton(video) {
   const button = el("button", "sound", { type: "button" });
   button.innerHTML =
@@ -367,6 +418,10 @@ function renderFileVideo(item) {
   useDownloadOnError(video, item, (url) => frameSrc(url, item.poster));
   watchPlayback(video);
   const sound = soundButton(video);
+  queueMicrotask(() => {
+    const media = video.closest(".card-media");
+    if (media) bindSoundChrome(media, sound);
+  });
   return [video, sound];
 }
 

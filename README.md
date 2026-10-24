@@ -43,7 +43,7 @@ Image, with an optional caption:
 
 ## Add videos
 
-Self-hosted file (mp4, mov, or webm). It fills the card, keeps its own shape, and plays on its own, muted and looping, with no play button. A speaker button at the bottom right of the card turns sound on for that video and mutes any other video that is playing. Tap it again to mute. Tap the video itself to pause or resume it. A `poster` image is optional and is the still frame shown before playback. Leave it out and the card uses the opening frame instead. People who prefer less motion get a still frame until they tap the video:
+Self-hosted file (mp4, mov, or webm). It fills the card, keeps its own shape, and plays on its own, muted and looping, with no play button. A speaker button fades in at the bottom right when you tap the video or hover it, then fades out after a moment. Tap the speaker to turn sound on for that video and mute any other one, and tap it again to mute. Tap the video itself to pause or resume it. A `poster` image is optional and is the still frame shown before playback. Leave it out and the card uses the opening frame instead. People who prefer less motion get a still frame until they tap the video:
 
 ```json
 {
