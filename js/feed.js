@@ -326,14 +326,19 @@ function bindSoundChrome(media, button) {
   button.addEventListener("focus", show);
 }
 
+let soundMark = 0;
+
 function soundButton(video) {
   const button = el("button", "sound", { type: "button" });
+  const mark = "sound-mute-" + ++soundMark;
   const speaker =
     '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M5.2 8.8H7.8L11.6 5.6V18.4L7.8 15.2H5.2C4.4 15.2 3.8 14.6 3.8 13.8V10.2C3.8 9.4 4.4 8.8 5.2 8.8Z"/>';
   button.innerHTML =
     '<svg class="sound-off" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
-    speaker +
-    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M3 16.8 12.6 4.6"/></svg>' +
+    '<mask id="' + mark + '" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/>' +
+    '<path d="M4 20 20 4" stroke="#000" stroke-width="3.4" stroke-linecap="round"/></mask>' +
+    '<g mask="url(#' + mark + ')">' + speaker + "</g>" +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M4 20 20 4"/></svg>' +
     '<svg class="sound-on" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
     speaker +
     '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M14.2 9.2a3.6 3.6 0 0 1 0 5.6"/>' +
