@@ -1,5 +1,9 @@
-import { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } from "./catalog.js";
-import { embedFor } from "./media.js";
+const VERSION = "20261024b";
+
+const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
+  `./catalog.js?v=${VERSION}`
+);
+const { embedFor } = await import(`./media.js?v=${VERSION}`);
 
 const BATCH = 2;
 const CACHE_KEY = "janice.si.art";
@@ -596,7 +600,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 async function loadFeedFile() {
-  const response = await fetch("content/feed.json");
+  const response = await fetch(`content/feed.json?v=${VERSION}`);
   if (!response.ok) throw new Error(String(response.status));
   return response.json();
 }
