@@ -43,7 +43,7 @@ Image, with an optional caption:
 
 ## Add videos
 
-Self-hosted file (mp4, mov, or webm). It fills the card, keeps its own shape, and plays on its own, muted and looping. A speaker button at the bottom right of the card turns sound on for that video and mutes any other video that is playing. Tap it again to mute. A `poster` image is optional and is the still frame shown before playback. Leave it out and the card uses the opening frame instead. People who prefer less motion get a still frame until they press Play:
+Self-hosted file (mp4, mov, or webm). It fills the card, keeps its own shape, and plays on its own, muted and looping, with no play button. A speaker button at the bottom right of the card turns sound on for that video and mutes any other video that is playing. Tap it again to mute. Tap the video itself to pause or resume it. A `poster` image is optional and is the still frame shown before playback. Leave it out and the card uses the opening frame instead. People who prefer less motion get a still frame until they tap the video:
 
 ```json
 {
@@ -55,7 +55,7 @@ Self-hosted file (mp4, mov, or webm). It fills the card, keeps its own shape, an
 }
 ```
 
-YouTube, TikTok, and Instagram play inline from a URL. Use a link to the video itself, not a channel or profile page. The player loads after Play. YouTube starts muted. TikTok is loaded with autoplay off and muted. Instagram uses its embed player.
+YouTube, TikTok, and Instagram play inline from a URL. Use a link to the video itself, not a channel or profile page. The player loads when the card is opened. YouTube starts muted. TikTok is loaded with autoplay off and muted. Instagram uses its embed player.
 
 ```json
 { "type": "youtube", "url": "https://www.youtube.com/watch?v=VIDEO_ID", "alt": "Describe the video", "caption": "Optional caption" }
