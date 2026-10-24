@@ -1,4 +1,4 @@
-const VERSION = "20261024f";
+const VERSION = "20261024g";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
@@ -221,7 +221,7 @@ function retryVisible() {
 
 function onGesture(event) {
   const target = event.target;
-  if (target && typeof target.closest === "function" && target.closest("video, .viewer")) return;
+  if (target && typeof target.closest === "function" && target.closest("video, .viewer, .sound, .expand")) return;
   retryVisible();
 }
 
@@ -260,14 +260,160 @@ function watchPlayback(video) {
   armGestureRetry();
   playbackObserver.observe(video);
   video.addEventListener("click", (event) => {
+    if (activeViewerVideo !== video) return;
     event.preventDefault();
     event.stopPropagation();
-    if (activeViewerVideo === video) {
-      revealChrome();
+    revealChrome();
+  });
+}
+
+function audioPresence(video) {
+  if (typeof video.mozHasAudio === "boolean") return video.mozHasAudio;
+  const tracks = video.audioTracks;
+  if (tracks && typeof tracks.length === "number") return tracks.length > 0;
+  return null;
+}
+
+const SOUND_VISIBLE_MS = 2500;
+const inlineHide = new WeakMap();
+
+function bindInlineChrome(media, video, cluster, sound, expand) {
+  let timer = 0;
+  let over = false;
+  sound.tabIndex = -1;
+  expand.tabIndex = -1;
+  const hide = () => {
+    over = false;
+    window.clearTimeout(timer);
+    cluster.classList.remove("is-shown");
+    sound.tabIndex = -1;
+    expand.tabIndex = -1;
+  };
+  const arm = () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      if (
+        over ||
+        sound.matches(":hover") ||
+        sound.matches(":focus-visible") ||
+        expand.matches(":hover") ||
+        expand.matches(":focus-visible")
+      ) {
+        arm();
+        return;
+      }
+      hide();
+    }, SOUND_VISIBLE_MS);
+  };
+  const show = () => {
+    if (video === activeViewerVideo) return;
+    cluster.classList.add("is-shown");
+    sound.tabIndex = sound.hidden ? -1 : 0;
+    expand.tabIndex = 0;
+    if (over) {
+      window.clearTimeout(timer);
       return;
     }
+    arm();
+  };
+  media.addEventListener("pointerenter", (event) => {
+    if (event.pointerType === "touch") return;
+    over = true;
+    show();
+  });
+  media.addEventListener("pointerleave", (event) => {
+    if (event.pointerType === "touch") return;
+    over = false;
+    if (cluster.classList.contains("is-shown")) arm();
+  });
+  media.addEventListener("click", (event) => {
+    if (event.target.closest && event.target.closest(".sound, .expand")) return;
+    show();
+  });
+  sound.addEventListener("click", show);
+  sound.addEventListener("focus", show);
+  expand.addEventListener("focus", show);
+  inlineHide.set(video, hide);
+}
+
+let soundMark = 0;
+
+function soundButton(video) {
+  const button = el("button", "sound", { type: "button" });
+  const mark = "sound-mute-" + ++soundMark;
+  const speakerD =
+    "M5.2 8.8H7.8L11.6 5.6V18.4L7.8 15.2H5.2C4.4 15.2 3.8 14.6 3.8 13.8V10.2C3.8 9.4 4.4 8.8 5.2 8.8Z";
+  const slashD = "M3.5 16.1 12.3 4.7";
+  const viewOff = "-4.09 -0.41 24 24";
+  const viewOn = "-0.21 0 24 24";
+  button.innerHTML =
+    '<svg class="sound-icon" viewBox="' + viewOff + '" width="22" height="22" aria-hidden="true" focusable="false">' +
+    '<mask id="' + mark + '" maskUnits="userSpaceOnUse" x="-6" y="-6" width="36" height="36"><rect x="-6" y="-6" width="36" height="36" fill="#fff"/>' +
+    '<path d="' + slashD + '" stroke="#000" stroke-width="3.4" stroke-linecap="round"/></mask>' +
+    '<g class="speaker" mask="url(#' + mark + ')">' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="' + speakerD + '"/>' +
+    "</g>" +
+    '<path class="slash" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="' + slashD + '"/>' +
+    '<g class="waves">' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M14.2 9.2a3.6 3.6 0 0 1 0 5.6"/>' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M18.2 8.5a4.6 4.6 0 0 1 0 7"/>' +
+    "</g></svg>";
+  const icon = button.querySelector(".sound-icon");
+  const speaker = button.querySelector(".speaker");
+  const paint = () => {
+    const on = !video.muted;
+    button.classList.toggle("is-on", on);
+    button.setAttribute("aria-pressed", on ? "true" : "false");
+    button.setAttribute("aria-label", on ? "Mute" : "Unmute");
+    icon.setAttribute("viewBox", on ? viewOn : viewOff);
+    speaker.setAttribute("mask", on ? "none" : "url(#" + mark + ")");
+  };
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const turnOn = video.muted;
+    if (turnOn) {
+      feed.querySelectorAll("video").forEach((other) => {
+        if (other !== video) other.muted = true;
+      });
+      video.defaultMuted = false;
+      video.removeAttribute("muted");
+      video.muted = false;
+      video.volume = 1;
+      heldPause.delete(video);
+      userStarted.add(video);
+      const pending = video.play();
+      if (pending && typeof pending.catch === "function") pending.catch(() => {});
+    } else {
+      video.muted = true;
+    }
+    paint();
+  });
+  video.addEventListener("volumechange", paint);
+  const reveal = () => {
+    const presence = audioPresence(video);
+    if (presence === false) button.hidden = true;
+    else if (presence === true) button.hidden = false;
+  };
+  video.addEventListener("loadedmetadata", reveal);
+  video.addEventListener("loadeddata", reveal);
+  if (video.readyState >= 1) reveal();
+  paint();
+  return button;
+}
+
+function expandButton(video) {
+  const button = el("button", "expand", { type: "button", "aria-label": "Full screen" });
+  button.innerHTML =
+    '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/>' +
+    "</svg>";
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     openViewer(video);
   });
+  return button;
 }
 
 function mountSpeaker(button) {
@@ -349,7 +495,11 @@ function renderFileVideo(item) {
   video.setAttribute("controlsList", "nodownload nofullscreen noremoteplayback");
   video.disablePictureInPicture = true;
   watchPlayback(video);
-  return video;
+  const sound = soundButton(video);
+  const expand = expandButton(video);
+  const cluster = el("div", "inline-controls");
+  cluster.append(expand, sound);
+  return { video, cluster, sound, expand };
 }
 
 function renderEmbed(item) {
@@ -395,7 +545,9 @@ function renderCard(item, index) {
     media.append(renderImage(item, index < 2));
   } else if (item.type === "video") {
     media.classList.add("is-video");
-    media.append(renderFileVideo(item));
+    const file = renderFileVideo(item);
+    media.append(file.video, file.cluster);
+    bindInlineChrome(media, file.video, file.cluster, file.sound, file.expand);
   } else {
     media.append(...renderEmbed(item));
   }
@@ -639,6 +791,7 @@ function unmuteVideo(video, andPlay) {
 function openViewer(video) {
   if (!video || activeViewerVideo === video) return;
   if (activeViewerVideo) closeViewer();
+  inlineHide.get(video)?.();
   activeViewerVideo = video;
   viewerReturn = video.closest(".card") || video.parentElement;
   const slot = document.createElement("div");
