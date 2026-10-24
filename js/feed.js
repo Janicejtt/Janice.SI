@@ -1087,6 +1087,7 @@ function onSwipeUp(event) {
     if (state.neighbor) restoreToFeed(state.neighbor);
     viewerReel.style.transition = "none";
     viewerReel.style.transform = "translateY(0px)";
+    revealChrome();
     return;
   }
   const height = viewerStage.clientHeight || window.innerHeight || 1;
@@ -1102,6 +1103,7 @@ function onSwipeUp(event) {
     const stray = viewerReel.querySelector(".viewer-pane.is-neighbor");
     if (stray) stray.remove();
     swipeBusy = false;
+    revealChrome();
   });
 }
 
