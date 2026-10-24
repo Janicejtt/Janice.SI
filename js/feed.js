@@ -326,10 +326,21 @@ function bindSoundChrome(media, button) {
   button.addEventListener("focus", show);
 }
 
+let soundMark = 0;
+
 function soundButton(video) {
   const button = el("button", "sound", { type: "button" });
+  const mark = "sound-mute-" + ++soundMark;
   button.innerHTML =
-    '<svg class="sound-off" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M5.2 9.3h1.8l3.7-2.8v11l-3.7-2.8H5.2c-.7 0-1.2-.5-1.2-1.1v-3.2c0-.6.5-1.1 1.2-1.1z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M15.1 9.6 18.4 14.4"/></svg>' +
+    '<svg class="sound-off" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' +
+    '<mask id="' + mark + '" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/>' +
+    '<path d="M4.4 5.2 19.2 18.8" stroke="#000" stroke-width="4" stroke-linecap="round"/></mask>' +
+    '<g mask="url(#' + mark + ')">' +
+    '<path fill="currentColor" d="M3.3 9.5V14.5c0 .55.45 1 1 1H6.1l4.2 3.4c.45.36 1.1.04 1.1-.52V5.62c0-.56-.65-.88-1.1-.52L6.1 8.5H4.3c-.55 0-1 .45-1 1z"/>' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" d="M14 9.2a3.4 3.4 0 0 1 0 5.6"/>' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" d="M16.7 6.8a6.4 6.4 0 0 1 0 10.4"/>' +
+    "</g>" +
+    '<path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" d="M4.4 5.2 19.2 18.8"/></svg>' +
     '<svg class="sound-on" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M5.2 9.3h1.8l3.7-2.8v11l-3.7-2.8H5.2c-.7 0-1.2-.5-1.2-1.1v-3.2c0-.6.5-1.1 1.2-1.1z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M15.3 9.2a3.3 3.3 0 0 1 0 5.6"/></svg>';
   const paint = () => {
     const on = !video.muted;
