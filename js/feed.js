@@ -326,22 +326,11 @@ function bindSoundChrome(media, button) {
   button.addEventListener("focus", show);
 }
 
-let soundMark = 0;
-
 function soundButton(video) {
   const button = el("button", "sound", { type: "button" });
-  const mark = "sound-mute-" + ++soundMark;
-  const speaker =
-    '<path fill="currentColor" d="M2.36 11.32H6.73L13.4 5.8Q15.47 4.42 15.47 6.72V25.58Q15.47 27.88 13.4 26.5L6.73 20.98H2.36Q.75 20.98.75 19.37V12.93Q.75 11.32 2.36 11.32Z"/>' +
-    '<path fill="none" stroke="currentColor" stroke-width="2.01" stroke-linecap="round" d="M17.77 12.7a3.62 3.62 0 0 1 0 6.9"/>' +
-    '<path fill="none" stroke="currentColor" stroke-width="3.51" stroke-linecap="round" d="M23.98 7.53a8.74 8.74 0 0 1 0 17.25"/>';
   button.innerHTML =
-    '<svg class="sound-off" viewBox="0 0 32 32" width="16" height="16" aria-hidden="true" focusable="false">' +
-    '<mask id="' + mark + '" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32"><rect width="32" height="32" fill="#fff"/>' +
-    '<path d="M2.13 6.03 27.89 27.65" stroke="#000" stroke-width="5.81" stroke-linecap="round"/></mask>' +
-    '<g mask="url(#' + mark + ')">' + speaker + "</g>" +
-    '<path fill="none" stroke="currentColor" stroke-width="3.51" stroke-linecap="round" d="M2.13 6.03 27.89 27.65"/></svg>' +
-    '<svg class="sound-on" viewBox="0 0 32 32" width="16" height="16" aria-hidden="true" focusable="false">' + speaker + "</svg>";
+    '<svg class="sound-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5v-5z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M16 10l4 4m0-4-4 4"/></svg>' +
+    '<svg class="sound-on" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5v-5z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.6 9.2a3.4 3.4 0 0 1 0 5.6M18 7a6.2 6.2 0 0 1 0 10"/></svg>';
   const paint = () => {
     const on = !video.muted;
     button.classList.toggle("is-on", on);
