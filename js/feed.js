@@ -331,17 +331,17 @@ let soundMark = 0;
 function soundButton(video) {
   const button = el("button", "sound", { type: "button" });
   const mark = "sound-mute-" + ++soundMark;
+  const speaker =
+    '<path fill="currentColor" d="M2.36 11.32H6.73L13.4 5.8Q15.47 4.42 15.47 6.72V25.58Q15.47 27.88 13.4 26.5L6.73 20.98H2.36Q.75 20.98.75 19.37V12.93Q.75 11.32 2.36 11.32Z"/>' +
+    '<path fill="none" stroke="currentColor" stroke-width="2.01" stroke-linecap="round" d="M17.77 12.7a3.62 3.62 0 0 1 0 6.9"/>' +
+    '<path fill="none" stroke="currentColor" stroke-width="3.51" stroke-linecap="round" d="M23.98 7.53a8.74 8.74 0 0 1 0 17.25"/>';
   button.innerHTML =
-    '<svg class="sound-off" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' +
-    '<mask id="' + mark + '" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/>' +
-    '<path d="M4.4 5.2 19.2 18.8" stroke="#000" stroke-width="4" stroke-linecap="round"/></mask>' +
-    '<g mask="url(#' + mark + ')">' +
-    '<path fill="currentColor" d="M3.3 9.5V14.5c0 .55.45 1 1 1H6.1l4.2 3.4c.45.36 1.1.04 1.1-.52V5.62c0-.56-.65-.88-1.1-.52L6.1 8.5H4.3c-.55 0-1 .45-1 1z"/>' +
-    '<path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" d="M14 9.2a3.4 3.4 0 0 1 0 5.6"/>' +
-    '<path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" d="M16.7 6.8a6.4 6.4 0 0 1 0 10.4"/>' +
-    "</g>" +
-    '<path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" d="M4.4 5.2 19.2 18.8"/></svg>' +
-    '<svg class="sound-on" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M5.2 9.3h1.8l3.7-2.8v11l-3.7-2.8H5.2c-.7 0-1.2-.5-1.2-1.1v-3.2c0-.6.5-1.1 1.2-1.1z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M15.3 9.2a3.3 3.3 0 0 1 0 5.6"/></svg>';
+    '<svg class="sound-off" viewBox="0 0 32 32" width="16" height="16" aria-hidden="true" focusable="false">' +
+    '<mask id="' + mark + '" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32"><rect width="32" height="32" fill="#fff"/>' +
+    '<path d="M2.13 6.03 27.89 27.65" stroke="#000" stroke-width="5.81" stroke-linecap="round"/></mask>' +
+    '<g mask="url(#' + mark + ')">' + speaker + "</g>" +
+    '<path fill="none" stroke="currentColor" stroke-width="3.51" stroke-linecap="round" d="M2.13 6.03 27.89 27.65"/></svg>' +
+    '<svg class="sound-on" viewBox="0 0 32 32" width="16" height="16" aria-hidden="true" focusable="false">' + speaker + "</svg>";
   const paint = () => {
     const on = !video.muted;
     button.classList.toggle("is-on", on);
