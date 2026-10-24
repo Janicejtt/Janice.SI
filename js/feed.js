@@ -1,4 +1,4 @@
-const VERSION = "20261024i";
+const VERSION = "20261024j";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
@@ -537,8 +537,36 @@ function showError(message) {
   finished = true;
 }
 
+function clearFit(node) {
+  if (!node) return;
+  node.style.width = "";
+  node.style.height = "";
+}
+
+function fitReplaced(node) {
+  const frame = node && node.parentElement;
+  if (!frame) return;
+  const frameStyle = getComputedStyle(frame);
+  const maxW = frame.clientWidth - parseFloat(frameStyle.paddingLeft) - parseFloat(frameStyle.paddingRight);
+  const maxH = frame.clientHeight - parseFloat(frameStyle.paddingTop) - parseFloat(frameStyle.paddingBottom);
+  const naturalW = node.videoWidth || node.naturalWidth || Number(node.getAttribute("width")) || 0;
+  const naturalH = node.videoHeight || node.naturalHeight || Number(node.getAttribute("height")) || 0;
+  if (!naturalW || !naturalH || maxW < 1 || maxH < 1) return;
+  const scale = Math.min(maxW / naturalW, maxH / naturalH);
+  const width = `${Math.max(1, Math.round(naturalW * scale))}px`;
+  const height = `${Math.max(1, Math.round(naturalH * scale))}px`;
+  if (node.style.width !== width) node.style.width = width;
+  if (node.style.height !== height) node.style.height = height;
+}
+
+function fitLightboxImage() {
+  if (!lightbox.open && !lightbox.hasAttribute("open")) return;
+  fitReplaced(lightboxImg);
+}
+
 function openLightbox(src, alt, caption, button) {
   opener = button;
+  clearFit(lightboxImg);
   lightboxImg.src = src;
   lightboxImg.alt = alt;
   lightboxCaption.textContent = caption || "";
@@ -552,9 +580,13 @@ function openLightbox(src, alt, caption, button) {
   }
   if (typeof lightbox.showModal === "function") lightbox.showModal();
   else lightbox.setAttribute("open", "");
+  const fit = () => requestAnimationFrame(fitLightboxImage);
+  if (lightboxImg.complete && lightboxImg.naturalWidth) fit();
+  lightboxImg.addEventListener("load", fit, { once: true });
 }
 
 function closeLightbox() {
+  clearFit(lightboxImg);
   lightboxImg.removeAttribute("src");
   if (lightbox.open && typeof lightbox.close === "function") lightbox.close();
   else lightbox.removeAttribute("open");
@@ -632,6 +664,7 @@ function bufferEnd(video) {
 function syncViewer() {
   const video = activeViewerVideo;
   if (!video) return;
+  fitReplaced(video);
   const duration = video.duration;
   const known = Number.isFinite(duration) && duration > 0;
   const played = known ? Math.min(1, video.currentTime / duration) : 0;
@@ -729,6 +762,7 @@ function holdPlace(video) {
 
 function restoreToFeed(video) {
   if (!video) return;
+  clearFit(video);
   for (const type of viewerMediaEvents) video.removeEventListener(type, syncViewer);
   video.muted = true;
   video.defaultMuted = true;
@@ -815,6 +849,7 @@ function openViewer(video) {
   bindViewerMedia(video);
   playInViewer(video);
   syncViewer();
+  requestAnimationFrame(() => fitReplaced(video));
   revealChrome();
   viewerBack.focus();
 }
@@ -905,6 +940,7 @@ function neighborPane(video, dir) {
     const pending = video.play();
     if (pending && typeof pending.catch === "function") pending.catch(() => {});
   }
+  requestAnimationFrame(() => fitReplaced(video));
 }
 
 function settle(incoming) {
@@ -917,6 +953,7 @@ function settle(incoming) {
   bindViewerMedia(incoming);
   playInViewer(incoming);
   syncViewer();
+  requestAnimationFrame(() => fitReplaced(incoming));
   rememberFeedPosition(incoming);
   revealChrome();
   swipeBusy = false;
@@ -1239,4 +1276,8 @@ async function init() {
 }
 
 paintSpeaker({ muted: false });
+window.addEventListener("resize", () => {
+  if (activeViewerVideo) viewer.querySelectorAll("video").forEach((video) => fitReplaced(video));
+  fitLightboxImage();
+});
 init();
