@@ -447,15 +447,15 @@ video::-webkit-media-controls-enclosure {
   display: block;
 }
 
-.sound .sound-on {
+.sound .waves {
   display: none;
 }
 
-.sound.is-on .sound-off {
+.sound.is-on .slash {
   display: none;
 }
 
-.sound.is-on .sound-on {
+.sound.is-on .waves {
   display: block;
 }
 
