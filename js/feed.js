@@ -1,4 +1,4 @@
-const VERSION = "20261024b";
+const VERSION = "20261024c";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
@@ -340,9 +340,9 @@ function soundButton(video) {
   button.innerHTML =
     '<svg class="sound-off" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
     '<mask id="' + mark + '" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/>' +
-    '<path d="M4 20 20 4" stroke="#000" stroke-width="3.4" stroke-linecap="round"/></mask>' +
+    '<path d="M3.5 16.1 12.3 4.7" stroke="#000" stroke-width="3.4" stroke-linecap="round"/></mask>' +
     '<g mask="url(#' + mark + ')">' + speaker + "</g>" +
-    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M4 20 20 4"/></svg>' +
+    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M3.5 16.1 12.3 4.7"/></svg>' +
     '<svg class="sound-on" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
     speaker +
     '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M14.2 9.2a3.6 3.6 0 0 1 0 5.6"/>' +
