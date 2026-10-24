@@ -415,6 +415,14 @@ video::-webkit-media-controls-enclosure {
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.sound.is-shown {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .sound svg {
@@ -592,8 +600,10 @@ video::-webkit-media-controls-enclosure {
 
 @media (prefers-reduced-motion: reduce) {
   .marfa,
-  .marfa-blob {
+  .marfa-blob,
+  .sound {
     animation: none;
+    transition: none;
   }
 
   .play-btn:hover .play-pill,
