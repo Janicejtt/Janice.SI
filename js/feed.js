@@ -130,11 +130,6 @@ function captionBar(caption) {
 function playButton(label) {
   const button = el("button", "play-btn", { type: "button" });
   button.setAttribute("aria-label", label);
-  const pill = el("span", "play-pill");
-  pill.setAttribute("aria-hidden", "true");
-  pill.innerHTML =
-    '<svg viewBox="0 0 12 14" width="12" height="14" focusable="false"><path d="M1 1.2v11.6L11 7 1 1.2z" fill="currentColor"/></svg><span>Play</span>';
-  button.append(pill);
   return button;
 }
 
@@ -182,6 +177,7 @@ function useDownloadOnError(node, item, rewrite) {
   node.addEventListener("error", () => {
     if (item.download && node.dataset.fallback !== "1") {
       node.dataset.fallback = "1";
+      if (node.tagName === "VIDEO" && node.muted) node.setAttribute("muted", "");
       node.src = typeof rewrite === "function" ? rewrite(item.download) : item.download;
       return;
     }
@@ -201,7 +197,85 @@ function audioPresence(video) {
   return null;
 }
 
-function soundButton(video, play) {
+const visibleVideos = new Set();
+const heldPause = new WeakSet();
+const userStarted = new WeakSet();
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+function tryPlay(video, fromUser) {
+  if (!video || heldPause.has(video)) return;
+  if (!fromUser && !visibleVideos.has(video)) return;
+  if (reduceMotion.matches && !userStarted.has(video)) return;
+  if (!video.paused) return;
+  const pending = video.play();
+  if (pending && typeof pending.then === "function") {
+    pending.then(() => {
+      delete video.dataset.autoplayBlocked;
+    }).catch(() => {
+      video.dataset.autoplayBlocked = "1";
+    });
+  }
+}
+
+function retryVisible() {
+  for (const video of visibleVideos) tryPlay(video);
+}
+
+function onGesture(event) {
+  const target = event.target;
+  if (target && typeof target.closest === "function" && target.closest("video, .sound")) return;
+  retryVisible();
+}
+
+let gestureArmed = false;
+function armGestureRetry() {
+  if (gestureArmed) return;
+  gestureArmed = true;
+  for (const type of ["pointerdown", "touchstart", "keydown", "scroll", "wheel"]) {
+    document.addEventListener(type, onGesture, { capture: true, passive: true });
+  }
+}
+
+const playbackObserver = new IntersectionObserver(
+  (entries) => {
+    for (const entry of entries) {
+      const video = entry.target;
+      if (!(video instanceof HTMLVideoElement)) continue;
+      if (entry.intersectionRatio >= 0.5) {
+        visibleVideos.add(video);
+        tryPlay(video);
+      } else {
+        visibleVideos.delete(video);
+        heldPause.delete(video);
+        if (!video.paused) video.pause();
+      }
+    }
+  },
+  { threshold: [0, 0.25, 0.5, 0.75, 1] }
+);
+
+function watchPlayback(video) {
+  armGestureRetry();
+  playbackObserver.observe(video);
+  video.addEventListener("click", () => {
+    if (video.paused) {
+      heldPause.delete(video);
+      userStarted.add(video);
+      visibleVideos.add(video);
+      const pending = video.play();
+      if (pending && typeof pending.catch === "function") {
+        pending.catch(() => {
+          video.dataset.autoplayBlocked = "1";
+        });
+      }
+    } else {
+      heldPause.add(video);
+      video.pause();
+    }
+  });
+}
+
+function soundButton(video) {
   const button = el("button", "sound", { type: "button" });
   button.innerHTML =
     '<svg class="sound-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.5h3.2L12 5.8v12.4l-4.3-3.7H4.5v-5z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M16 10l4 4m0-4-4 4"/></svg>' +
@@ -224,13 +298,10 @@ function soundButton(video, play) {
       video.removeAttribute("muted");
       video.muted = false;
       video.volume = 1;
-      play.hidden = true;
+      heldPause.delete(video);
+      userStarted.add(video);
       const pending = video.play();
-      if (pending && typeof pending.catch === "function") {
-        pending.catch(() => {
-          play.hidden = false;
-        });
-      }
+      if (pending && typeof pending.catch === "function") pending.catch(() => {});
     } else {
       video.muted = true;
     }
@@ -271,55 +342,36 @@ function renderImage(item, eager) {
   return button;
 }
 
-function renderFileVideo(item, eager) {
+function renderFileVideo(item) {
   const src = frameSrc(locationOf(item), item.poster);
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const video = el("video", null, {
-    src,
-    poster: item.poster || undefined,
-    preload: item.poster && eager && !reduceMotion ? "auto" : "metadata",
-    playsinline: "",
-    "webkit-playsinline": "",
-    muted: "",
-    loop: "",
-    autoplay: reduceMotion ? false : "",
-    width: item.width || undefined,
-    height: item.height || undefined,
-  });
+  const video = document.createElement("video");
   video.muted = true;
   video.defaultMuted = true;
+  video.setAttribute("muted", "");
   video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
+  video.autoplay = true;
+  video.setAttribute("autoplay", "");
+  video.preload = "auto";
+  video.setAttribute("preload", "auto");
   video.loop = true;
+  video.setAttribute("loop", "");
+  video.controls = false;
+  video.removeAttribute("controls");
+  if (item.poster) video.setAttribute("poster", item.poster);
+  if (item.width) video.setAttribute("width", item.width);
+  if (item.height) video.setAttribute("height", item.height);
   video.setAttribute("aria-label", item.alt);
+  video.src = src;
   useDownloadOnError(video, item, (url) => frameSrc(url, item.poster));
-  const button = playButton(`Play video: ${item.alt}`);
-  const start = () => {
-    button.hidden = true;
-    if (!video.muted) return;
-    video.muted = true;
-    const pending = video.play();
-    if (pending && typeof pending.catch === "function") {
-      pending.catch(() => {
-        button.hidden = false;
-      });
-    }
-  };
-  button.addEventListener("click", start);
-  const sound = soundButton(video, button);
-  if (reduceMotion) {
-    video.autoplay = false;
-    video.removeAttribute("autoplay");
-  } else {
-    video.autoplay = true;
-    button.hidden = true;
-    if (video.readyState >= 2) start();
-    else video.addEventListener("loadeddata", start, { once: true });
-  }
-  return [video, button, sound];
+  watchPlayback(video);
+  const sound = soundButton(video);
+  return [video, sound];
 }
 
 function renderEmbed(item) {
-  const button = playButton(`Play ${item.type} video: ${item.alt}`);
+  const button = playButton(`Open ${item.type} video: ${item.alt}`);
   button.addEventListener("click", () => {
     const media = button.closest(".card-media");
     const link = item.url || item.src;
@@ -361,7 +413,7 @@ function renderCard(item, index) {
     media.append(renderImage(item, index < 2));
   } else if (item.type === "video") {
     media.classList.add("is-video");
-    media.append(...renderFileVideo(item, index < 2));
+    media.append(...renderFileVideo(item));
   } else {
     media.append(...renderEmbed(item));
   }
