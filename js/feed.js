@@ -329,8 +329,8 @@ function bindSoundChrome(media, button) {
 function soundButton(video) {
   const button = el("button", "sound", { type: "button" });
   button.innerHTML =
-    '<svg class="sound-off" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 9.2h2.7L11.2 5.4v13.2L6.7 14.8H4V9.2z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.2 9.1 19.6 14.9"/></svg>' +
-    '<svg class="sound-on" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M4 9.2h2.7L11.2 5.4v13.2L6.7 14.8H4V9.2z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M14.6 9.3a3.2 3.2 0 0 1 0 5.4M17.2 7.1a6.2 6.2 0 0 1 0 9.8"/></svg>';
+    '<svg class="sound-off" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M5.2 9.3h1.8l3.7-2.8v11l-3.7-2.8H5.2c-.7 0-1.2-.5-1.2-1.1v-3.2c0-.6.5-1.1 1.2-1.1z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M15.1 9.6 18.4 14.4"/></svg>' +
+    '<svg class="sound-on" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M5.2 9.3h1.8l3.7-2.8v11l-3.7-2.8H5.2c-.7 0-1.2-.5-1.2-1.1v-3.2c0-.6.5-1.1 1.2-1.1z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" d="M15.3 9.2a3.3 3.3 0 0 1 0 5.6"/></svg>';
   const paint = () => {
     const on = !video.muted;
     button.classList.toggle("is-on", on);
