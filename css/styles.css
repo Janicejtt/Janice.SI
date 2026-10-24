@@ -411,8 +411,8 @@ video::-webkit-media-controls-enclosure {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.65);
-  background-color: rgba(0, 0, 0, 0.65);
+  background: rgba(50, 50, 50, 0.8);
+  background-color: rgba(50, 50, 50, 0.8);
   background-image: none;
   color: #fff;
   box-shadow: none;
@@ -434,8 +434,8 @@ video::-webkit-media-controls-enclosure {
 .sound.is-shown:active {
   opacity: 1;
   pointer-events: auto;
-  background: rgba(0, 0, 0, 0.65);
-  background-color: rgba(0, 0, 0, 0.65);
+  background: rgba(50, 50, 50, 0.8);
+  background-color: rgba(50, 50, 50, 0.8);
   background-image: none;
   color: #fff;
   border: 0;
