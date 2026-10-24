@@ -1,4 +1,4 @@
-const VERSION = "20261024e";
+const VERSION = "20261024f";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
@@ -519,7 +519,7 @@ document.addEventListener("keydown", (event) => {
 const CHROME_MS = 2500;
 const viewer = document.querySelector("#viewer");
 const viewerStage = viewer.querySelector(".viewer-stage");
-const viewerBack = viewer.querySelector(".viewer-back");
+const viewerClose = viewer.querySelector(".viewer-close");
 const viewerChrome = viewer.querySelector(".viewer-chrome");
 const viewerProgress = viewer.querySelector(".viewer-progress");
 const viewerBuffer = viewer.querySelector(".viewer-progress-buffer");
@@ -527,7 +527,6 @@ const viewerFill = viewer.querySelector(".viewer-progress-fill");
 const viewerPlay = viewer.querySelector(".viewer-play");
 const viewerTime = viewer.querySelector(".viewer-time");
 const viewerSound = viewer.querySelector(".viewer-sound");
-const viewerZoom = viewer.querySelector(".viewer-zoom");
 const paintSpeaker = mountSpeaker(viewerSound);
 
 let viewerSlot = null;
@@ -571,9 +570,6 @@ function syncViewer() {
   viewer.classList.toggle("is-waiting", video.readyState < 3 && !paused);
   viewerPlay.setAttribute("aria-label", paused ? "Play" : "Pause");
   paintSpeaker(video);
-  const filled = viewer.classList.contains("is-fill");
-  viewerZoom.setAttribute("aria-pressed", filled ? "true" : "false");
-  viewerZoom.setAttribute("aria-label", filled ? "Zoom out" : "Zoom in");
 }
 
 function hideChrome() {
@@ -655,14 +651,15 @@ function openViewer(video) {
   video.before(slot);
   viewerSlot = slot;
   viewerStage.append(video);
-  viewer.classList.remove("is-fill", "is-paused");
+  viewer.classList.remove("is-paused");
+  viewer.classList.add("is-chrome");
   viewer.hidden = false;
   lockScroll();
   unmuteVideo(video, true);
   for (const type of viewerMediaEvents) video.addEventListener(type, syncViewer);
   syncViewer();
   revealChrome();
-  viewerBack.focus();
+  viewerClose.focus();
 }
 
 function closeViewer() {
@@ -679,7 +676,7 @@ function closeViewer() {
   if (viewerSlot && viewerSlot.parentNode) viewerSlot.replaceWith(video);
   viewerSlot = null;
   activeViewerVideo = null;
-  viewer.classList.remove("is-open", "is-chrome", "is-paused", "is-fill", "is-waiting");
+  viewer.classList.remove("is-open", "is-chrome", "is-paused", "is-waiting");
   viewer.hidden = true;
   unlockScroll();
   heldPause.delete(video);
@@ -772,11 +769,17 @@ function endSeek() {
   armChrome();
 }
 
-viewerBack.addEventListener("click", (event) => {
+function closeFromBar(event) {
   event.preventDefault();
   event.stopPropagation();
   closeViewer();
+}
+viewerClose.addEventListener("pointerdown", (event) => {
+  event.stopPropagation();
 });
+viewerClose.addEventListener("pointerup", closeFromBar);
+viewerClose.addEventListener("click", closeFromBar);
+viewerClose.addEventListener("touchend", closeFromBar, { passive: false });
 viewerPlay.addEventListener("click", (event) => {
   event.preventDefault();
   event.stopPropagation();
@@ -786,13 +789,6 @@ viewerSound.addEventListener("click", (event) => {
   event.preventDefault();
   event.stopPropagation();
   toggleViewerSound();
-});
-viewerZoom.addEventListener("click", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  viewer.classList.toggle("is-fill");
-  syncViewer();
-  revealChrome();
 });
 viewerProgress.addEventListener("pointerdown", beginSeek);
 viewerProgress.addEventListener("pointermove", moveSeek);
