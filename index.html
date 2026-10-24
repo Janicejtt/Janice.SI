@@ -21,7 +21,7 @@
   <link rel="icon" href="assets/icons/favicon-32.png?v=2" type="image/png" sizes="32x32">
   <link rel="icon" href="assets/icons/icon512.png?v=2" type="image/png" sizes="512x512">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png?v=2" sizes="180x180">
-  <link rel="stylesheet" href="css/styles.css?v=20261024e">
+  <link rel="stylesheet" href="css/styles.css?v=20261024f">
 </head>
 <body>
   <div class="skip-links">
@@ -45,11 +45,6 @@
 
   <div id="viewer" class="viewer" hidden role="dialog" aria-modal="true" aria-label="Video">
     <div class="viewer-stage"></div>
-    <button type="button" class="viewer-back round-btn" aria-label="Back">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-        <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M14.5 5.5 8 12l6.5 6.5"/>
-      </svg>
-    </button>
     <div class="viewer-chrome">
       <div class="viewer-progress" role="slider" aria-label="Video position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
         <div class="viewer-progress-track">
@@ -71,12 +66,9 @@
         </div>
         <div class="viewer-bar-group">
           <button type="button" class="viewer-sound round-btn speaker-btn" aria-label="Mute" aria-pressed="true"></button>
-          <button type="button" class="viewer-zoom round-btn" aria-label="Zoom in" aria-pressed="false">
-            <svg class="icon-expand" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-              <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/>
-            </svg>
-            <svg class="icon-collapse" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-              <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M4 10h6V4M20 10h-6V4M4 14h6v6M20 14h-6v6"/>
+          <button type="button" class="viewer-close round-btn" aria-label="Close">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+              <path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="M7.5 7.5 16.5 16.5M16.5 7.5 7.5 16.5"/>
             </svg>
           </button>
         </div>
@@ -92,6 +84,6 @@
     </figure>
   </dialog>
 
-  <script type="module" src="js/feed.js?v=20261024e"></script>
+  <script type="module" src="js/feed.js?v=20261024f"></script>
 </body>
 </html>

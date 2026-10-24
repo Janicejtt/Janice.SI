@@ -432,8 +432,6 @@ video::-webkit-media-controls-enclosure {
 }
 
 .speaker-btn .waves,
-.viewer.is-fill .icon-expand,
-.viewer .icon-collapse,
 .viewer .icon-play {
   display: none;
 }
@@ -443,10 +441,6 @@ video::-webkit-media-controls-enclosure {
 }
 
 .speaker-btn.is-on .waves {
-  display: block;
-}
-
-.viewer.is-fill .icon-collapse {
   display: block;
 }
 
@@ -489,15 +483,15 @@ video::-webkit-media-controls-enclosure {
   cursor: pointer;
 }
 
-.viewer.is-fill .viewer-stage video {
-  object-fit: cover;
-}
-
-.viewer-back {
-  position: absolute;
-  z-index: 3;
-  top: calc(0.75rem + env(safe-area-inset-top));
-  left: calc(0.75rem + env(safe-area-inset-left));
+.viewer-close,
+.viewer-close:hover,
+.viewer-close:focus,
+.viewer-close:focus-visible,
+.viewer-close:active {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .viewer-chrome {
