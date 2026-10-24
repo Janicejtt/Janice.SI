@@ -1,4 +1,4 @@
-const VERSION = "20261024d";
+const VERSION = "20261024e";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
@@ -194,14 +194,8 @@ function frameSrc(src, poster) {
   return `${src}#t=0.1`;
 }
 
-function audioPresence(video) {
-  if (typeof video.mozHasAudio === "boolean") return video.mozHasAudio;
-  const tracks = video.audioTracks;
-  if (tracks && typeof tracks.length === "number") return tracks.length > 0;
-  return null;
-}
-
 const visibleVideos = new Set();
+let activeViewerVideo = null;
 const heldPause = new WeakSet();
 const userStarted = new WeakSet();
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -227,7 +221,7 @@ function retryVisible() {
 
 function onGesture(event) {
   const target = event.target;
-  if (target && typeof target.closest === "function" && target.closest("video, .sound")) return;
+  if (target && typeof target.closest === "function" && target.closest("video, .viewer")) return;
   retryVisible();
 }
 
@@ -245,6 +239,10 @@ const playbackObserver = new IntersectionObserver(
     for (const entry of entries) {
       const video = entry.target;
       if (!(video instanceof HTMLVideoElement)) continue;
+      if (video === activeViewerVideo) {
+        visibleVideos.add(video);
+        continue;
+      }
       if (entry.intersectionRatio >= 0.5) {
         visibleVideos.add(video);
         tryPlay(video);
@@ -261,92 +259,29 @@ const playbackObserver = new IntersectionObserver(
 function watchPlayback(video) {
   armGestureRetry();
   playbackObserver.observe(video);
-  video.addEventListener("click", () => {
-    if (video.paused) {
-      heldPause.delete(video);
-      userStarted.add(video);
-      visibleVideos.add(video);
-      const pending = video.play();
-      if (pending && typeof pending.catch === "function") {
-        pending.catch(() => {
-          video.dataset.autoplayBlocked = "1";
-        });
-      }
-    } else {
-      heldPause.add(video);
-      video.pause();
+  video.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (activeViewerVideo === video) {
+      revealChrome();
+      return;
     }
+    openViewer(video);
   });
 }
 
-const SOUND_VISIBLE_MS = 2500;
-
-function bindSoundChrome(media, button) {
-  let timer = 0;
-  let over = false;
-  button.tabIndex = -1;
-  const hide = () => {
-    button.classList.remove("is-shown");
-    button.tabIndex = -1;
-  };
-  const arm = () => {
-    window.clearTimeout(timer);
-    timer = window.setTimeout(() => {
-      if (over || button.matches(":hover") || button.matches(":focus-visible")) {
-        arm();
-        return;
-      }
-      hide();
-    }, SOUND_VISIBLE_MS);
-  };
-  const show = () => {
-    if (button.hidden) return;
-    button.classList.add("is-shown");
-    button.tabIndex = 0;
-    if (over) {
-      window.clearTimeout(timer);
-      return;
-    }
-    arm();
-  };
-  media.addEventListener("pointerenter", (event) => {
-    if (event.pointerType === "touch") {
-      show();
-      return;
-    }
-    over = true;
-    show();
-  });
-  media.addEventListener("pointerleave", (event) => {
-    if (event.pointerType === "touch") return;
-    over = false;
-    if (button.classList.contains("is-shown")) arm();
-  });
-  media.addEventListener("click", (event) => {
-    if (event.target.closest && event.target.closest(".sound")) return;
-    show();
-  });
-  button.addEventListener("click", show);
-  button.addEventListener("focus", show);
-}
-
-let soundMark = 0;
-
-function soundButton(video) {
-  const button = el("button", "sound", { type: "button" });
-  const mark = "sound-mute-" + ++soundMark;
+function mountSpeaker(button) {
+  const mark = "viewer-mute";
   const speakerD =
     "M5.2 8.8H7.8L11.6 5.6V18.4L7.8 15.2H5.2C4.4 15.2 3.8 14.6 3.8 13.8V10.2C3.8 9.4 4.4 8.8 5.2 8.8Z";
   const slashD = "M3.5 16.1 12.3 4.7";
-  // Same speaker path in both states. The viewBox only pans so each state's
-  // visible bounds (speaker + slash, or speaker + waves) sit in the circle center.
   const viewOff = "-4.09 -0.41 24 24";
   const viewOn = "-0.21 0 24 24";
   button.innerHTML =
-    '<svg class="sound-icon" viewBox="' + viewOff + '" width="22" height="22" aria-hidden="true" focusable="false">' +
+    '<svg class="sound-icon" viewBox="' + viewOn + '" width="22" height="22" aria-hidden="true" focusable="false">' +
     '<mask id="' + mark + '" maskUnits="userSpaceOnUse" x="-6" y="-6" width="36" height="36"><rect x="-6" y="-6" width="36" height="36" fill="#fff"/>' +
     '<path d="' + slashD + '" stroke="#000" stroke-width="3.4" stroke-linecap="round"/></mask>' +
-    '<g class="speaker" mask="url(#' + mark + ')">' +
+    '<g class="speaker">' +
     '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="' + speakerD + '"/>' +
     "</g>" +
     '<path class="slash" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" d="' + slashD + '"/>' +
@@ -356,46 +291,14 @@ function soundButton(video) {
     "</g></svg>";
   const icon = button.querySelector(".sound-icon");
   const speaker = button.querySelector(".speaker");
-  const paint = () => {
+  return (video) => {
     const on = !video.muted;
-    button.classList.toggle("is-on", on);
+    button.classList.toggle("is-on", !!on);
     button.setAttribute("aria-pressed", on ? "true" : "false");
     button.setAttribute("aria-label", on ? "Mute" : "Unmute");
     icon.setAttribute("viewBox", on ? viewOn : viewOff);
     speaker.setAttribute("mask", on ? "none" : "url(#" + mark + ")");
   };
-  button.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const turnOn = video.muted;
-    if (turnOn) {
-      feed.querySelectorAll("video").forEach((other) => {
-        if (other !== video) other.muted = true;
-      });
-      video.defaultMuted = false;
-      video.removeAttribute("muted");
-      video.muted = false;
-      video.volume = 1;
-      heldPause.delete(video);
-      userStarted.add(video);
-      const pending = video.play();
-      if (pending && typeof pending.catch === "function") pending.catch(() => {});
-    } else {
-      video.muted = true;
-    }
-    paint();
-  });
-  video.addEventListener("volumechange", paint);
-  const reveal = () => {
-    const presence = audioPresence(video);
-    if (presence === false) button.hidden = true;
-    else if (presence === true) button.hidden = false;
-  };
-  video.addEventListener("loadedmetadata", reveal);
-  video.addEventListener("loadeddata", reveal);
-  if (video.readyState >= 1) reveal();
-  paint();
-  return button;
 }
 
 function renderImage(item, eager) {
@@ -443,13 +346,10 @@ function renderFileVideo(item) {
   video.setAttribute("aria-label", item.alt);
   video.src = src;
   useDownloadOnError(video, item, (url) => frameSrc(url, item.poster));
+  video.setAttribute("controlsList", "nodownload nofullscreen noremoteplayback");
+  video.disablePictureInPicture = true;
   watchPlayback(video);
-  const sound = soundButton(video);
-  queueMicrotask(() => {
-    const media = video.closest(".card-media");
-    if (media) bindSoundChrome(media, sound);
-  });
-  return [video, sound];
+  return video;
 }
 
 function renderEmbed(item) {
@@ -495,7 +395,7 @@ function renderCard(item, index) {
     media.append(renderImage(item, index < 2));
   } else if (item.type === "video") {
     media.classList.add("is-video");
-    media.append(...renderFileVideo(item));
+    media.append(renderFileVideo(item));
   } else {
     media.append(...renderEmbed(item));
   }
@@ -607,7 +507,320 @@ lightbox.addEventListener("close", () => {
   opener = null;
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && lightbox.hasAttribute("open")) closeLightbox();
+  if (event.key !== "Escape") return;
+  if (activeViewerVideo) {
+    event.preventDefault();
+    closeViewer();
+    return;
+  }
+  if (lightbox.hasAttribute("open")) closeLightbox();
+});
+
+const CHROME_MS = 2500;
+const viewer = document.querySelector("#viewer");
+const viewerStage = viewer.querySelector(".viewer-stage");
+const viewerBack = viewer.querySelector(".viewer-back");
+const viewerChrome = viewer.querySelector(".viewer-chrome");
+const viewerProgress = viewer.querySelector(".viewer-progress");
+const viewerBuffer = viewer.querySelector(".viewer-progress-buffer");
+const viewerFill = viewer.querySelector(".viewer-progress-fill");
+const viewerPlay = viewer.querySelector(".viewer-play");
+const viewerTime = viewer.querySelector(".viewer-time");
+const viewerSound = viewer.querySelector(".viewer-sound");
+const viewerZoom = viewer.querySelector(".viewer-zoom");
+const paintSpeaker = mountSpeaker(viewerSound);
+
+let viewerSlot = null;
+let viewerReturn = null;
+let chromeTimer = 0;
+let seeking = false;
+let scrollLockY = 0;
+const viewerMediaEvents = ["timeupdate", "progress", "durationchange", "play", "pause", "waiting", "playing", "seeked", "volumechange", "loadedmetadata"];
+
+function formatRemaining(video) {
+  const duration = video.duration;
+  if (!Number.isFinite(duration)) return "-0:00";
+  const left = Math.max(0, Math.ceil(duration - video.currentTime));
+  const hours = Math.floor(left / 3600);
+  const minutes = Math.floor((left % 3600) / 60);
+  const seconds = String(left % 60).padStart(2, "0");
+  if (hours > 0) return `-${hours}:${String(minutes).padStart(2, "0")}:${seconds}`;
+  return `-${minutes}:${seconds}`;
+}
+
+function bufferEnd(video) {
+  let end = 0;
+  const ranges = video.buffered;
+  for (let i = 0; i < ranges.length; i += 1) end = Math.max(end, ranges.end(i));
+  return end;
+}
+
+function syncViewer() {
+  const video = activeViewerVideo;
+  if (!video) return;
+  const duration = video.duration;
+  const known = Number.isFinite(duration) && duration > 0;
+  const played = known ? Math.min(1, video.currentTime / duration) : 0;
+  const buffered = known ? Math.min(1, bufferEnd(video) / duration) : 0;
+  viewerFill.style.width = `${played * 100}%`;
+  viewerBuffer.style.width = `${buffered * 100}%`;
+  viewerProgress.setAttribute("aria-valuenow", String(Math.round(played * 100)));
+  viewerTime.textContent = formatRemaining(video);
+  const paused = video.paused;
+  viewer.classList.toggle("is-paused", paused);
+  viewer.classList.toggle("is-waiting", video.readyState < 3 && !paused);
+  viewerPlay.setAttribute("aria-label", paused ? "Play" : "Pause");
+  paintSpeaker(video);
+  const filled = viewer.classList.contains("is-fill");
+  viewerZoom.setAttribute("aria-pressed", filled ? "true" : "false");
+  viewerZoom.setAttribute("aria-label", filled ? "Zoom out" : "Zoom in");
+}
+
+function hideChrome() {
+  if (!activeViewerVideo || activeViewerVideo.paused || seeking) return;
+  viewer.classList.remove("is-chrome");
+}
+
+function armChrome() {
+  window.clearTimeout(chromeTimer);
+  if (!activeViewerVideo || activeViewerVideo.paused || seeking) return;
+  chromeTimer = window.setTimeout(hideChrome, CHROME_MS);
+}
+
+function revealChrome() {
+  viewer.classList.add("is-chrome");
+  armChrome();
+}
+
+function lockScroll() {
+  scrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.body.classList.add("viewer-open");
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollLockY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+}
+
+function unlockScroll() {
+  document.body.classList.remove("viewer-open");
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  window.scrollTo(0, scrollLockY);
+}
+
+function mostlyVisible(node) {
+  const rect = node.getBoundingClientRect();
+  const height = window.innerHeight || document.documentElement.clientHeight || 0;
+  const visible = Math.max(0, Math.min(rect.bottom, height) - Math.max(rect.top, 0));
+  return rect.height > 0 && visible / rect.height >= 0.5;
+}
+
+function unmuteVideo(video, andPlay) {
+  document.querySelectorAll("video").forEach((other) => {
+    if (other === video) return;
+    other.muted = true;
+    if (andPlay && !other.paused) other.pause();
+  });
+  video.defaultMuted = false;
+  video.removeAttribute("muted");
+  video.muted = false;
+  video.volume = 1;
+  video.controls = false;
+  video.removeAttribute("controls");
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  if (!andPlay) return;
+  heldPause.delete(video);
+  userStarted.add(video);
+  const pending = video.play();
+  if (pending && typeof pending.catch === "function") pending.catch(() => {});
+}
+
+function openViewer(video) {
+  if (!video || activeViewerVideo === video) return;
+  if (activeViewerVideo) closeViewer();
+  activeViewerVideo = video;
+  viewerReturn = video.closest(".card") || video.parentElement;
+  const slot = document.createElement("div");
+  slot.className = "video-slot";
+  if (video.videoWidth && video.videoHeight) {
+    slot.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+  } else {
+    slot.style.height = `${Math.max(1, Math.round(video.getBoundingClientRect().height))}px`;
+  }
+  video.before(slot);
+  viewerSlot = slot;
+  viewerStage.append(video);
+  viewer.classList.remove("is-fill", "is-paused");
+  viewer.hidden = false;
+  lockScroll();
+  unmuteVideo(video, true);
+  for (const type of viewerMediaEvents) video.addEventListener(type, syncViewer);
+  syncViewer();
+  revealChrome();
+  viewerBack.focus();
+}
+
+function closeViewer() {
+  const video = activeViewerVideo;
+  if (!video) return;
+  window.clearTimeout(chromeTimer);
+  seeking = false;
+  for (const type of viewerMediaEvents) video.removeEventListener(type, syncViewer);
+  video.muted = true;
+  video.defaultMuted = true;
+  video.setAttribute("muted", "");
+  video.controls = false;
+  video.removeAttribute("controls");
+  if (viewerSlot && viewerSlot.parentNode) viewerSlot.replaceWith(video);
+  viewerSlot = null;
+  activeViewerVideo = null;
+  viewer.classList.remove("is-open", "is-chrome", "is-paused", "is-fill", "is-waiting");
+  viewer.hidden = true;
+  unlockScroll();
+  heldPause.delete(video);
+  if (mostlyVisible(video)) {
+    visibleVideos.add(video);
+    tryPlay(video);
+  } else if (!video.paused) {
+    video.pause();
+    visibleVideos.delete(video);
+  }
+  retryVisible();
+  paintSpeaker(video);
+  if (viewerReturn && typeof viewerReturn.focus === "function") {
+    viewerReturn.setAttribute("tabindex", "-1");
+    viewerReturn.focus();
+  }
+  viewerReturn = null;
+}
+
+function toggleViewerSound() {
+  const video = activeViewerVideo;
+  if (!video) return;
+  if (video.muted) unmuteVideo(video, false);
+  else video.muted = true;
+  paintSpeaker(video);
+  revealChrome();
+}
+
+function toggleViewerPlay() {
+  const video = activeViewerVideo;
+  if (!video) return;
+  if (video.paused) {
+    heldPause.delete(video);
+    userStarted.add(video);
+    const pending = video.play();
+    if (pending && typeof pending.catch === "function") pending.catch(() => {});
+  } else {
+    video.pause();
+  }
+  syncViewer();
+  revealChrome();
+}
+
+function seekTo(video, time) {
+  if (!video || !Number.isFinite(time)) return;
+  const ranges = video.seekable;
+  for (let i = 0; i < ranges.length; i += 1) {
+    if (time >= ranges.start(i) - 0.05 && time <= ranges.end(i) + 0.25) {
+      video.currentTime = time;
+      syncViewer();
+      return;
+    }
+  }
+}
+
+function seekRatio(event) {
+  const video = activeViewerVideo;
+  if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
+  const point = event.touches ? event.touches[0] || event.changedTouches?.[0] : event;
+  if (!point) return;
+  const rect = viewerProgress.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (point.clientX - rect.left) / Math.max(1, rect.width)));
+  seekTo(video, ratio * video.duration);
+}
+
+function beginSeek(event) {
+  if (event.cancelable) event.preventDefault();
+  event.stopPropagation();
+  seeking = true;
+  if (event.pointerId != null && viewerProgress.setPointerCapture) {
+    try {
+      viewerProgress.setPointerCapture(event.pointerId);
+    } catch {
+      /* pointer already released */
+    }
+  }
+  seekRatio(event);
+  revealChrome();
+}
+
+function moveSeek(event) {
+  if (!seeking) return;
+  if (event.cancelable) event.preventDefault();
+  seekRatio(event);
+}
+
+function endSeek() {
+  if (!seeking) return;
+  seeking = false;
+  armChrome();
+}
+
+viewerBack.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  closeViewer();
+});
+viewerPlay.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  toggleViewerPlay();
+});
+viewerSound.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  toggleViewerSound();
+});
+viewerZoom.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  viewer.classList.toggle("is-fill");
+  syncViewer();
+  revealChrome();
+});
+viewerProgress.addEventListener("pointerdown", beginSeek);
+viewerProgress.addEventListener("pointermove", moveSeek);
+viewerProgress.addEventListener("pointerup", endSeek);
+viewerProgress.addEventListener("pointercancel", endSeek);
+viewerProgress.addEventListener("touchstart", (event) => {
+  if (event.cancelable) event.preventDefault();
+  if (window.PointerEvent) return;
+  beginSeek(event);
+}, { passive: false });
+viewerProgress.addEventListener("touchmove", (event) => {
+  if (!seeking) return;
+  if (event.cancelable) event.preventDefault();
+  if (window.PointerEvent) return;
+  moveSeek(event);
+}, { passive: false });
+viewerProgress.addEventListener("touchend", () => {
+  if (window.PointerEvent) return;
+  endSeek();
+});
+viewerProgress.addEventListener("keydown", (event) => {
+  const video = activeViewerVideo;
+  if (!video || !Number.isFinite(video.duration)) return;
+  if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+  event.preventDefault();
+  const step = event.key === "ArrowRight" ? 5 : -5;
+  seekTo(video, Math.min(video.duration, Math.max(0, video.currentTime + step)));
+  revealChrome();
 });
 
 async function loadFeedFile() {
@@ -648,4 +861,5 @@ async function init() {
   fillAhead();
 }
 
+paintSpeaker({ muted: false });
 init();
