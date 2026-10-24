@@ -1,4 +1,4 @@
-const VERSION = "20261024g";
+const VERSION = "20261024h";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
@@ -221,7 +221,7 @@ function retryVisible() {
 
 function onGesture(event) {
   const target = event.target;
-  if (target && typeof target.closest === "function" && target.closest("video, .viewer, .sound, .expand")) return;
+  if (target && typeof target.closest === "function" && target.closest("video, .viewer, .sound")) return;
   retryVisible();
 }
 
@@ -239,7 +239,7 @@ const playbackObserver = new IntersectionObserver(
     for (const entry of entries) {
       const video = entry.target;
       if (!(video instanceof HTMLVideoElement)) continue;
-      if (video === activeViewerVideo) {
+      if (video === activeViewerVideo || viewer.contains(video)) {
         visibleVideos.add(video);
         continue;
       }
@@ -260,82 +260,21 @@ function watchPlayback(video) {
   armGestureRetry();
   playbackObserver.observe(video);
   video.addEventListener("click", (event) => {
-    if (activeViewerVideo !== video) return;
     event.preventDefault();
     event.stopPropagation();
-    revealChrome();
-  });
-}
-
-function audioPresence(video) {
-  if (typeof video.mozHasAudio === "boolean") return video.mozHasAudio;
-  const tracks = video.audioTracks;
-  if (tracks && typeof tracks.length === "number") return tracks.length > 0;
-  return null;
-}
-
-const SOUND_VISIBLE_MS = 2500;
-const inlineHide = new WeakMap();
-
-function bindInlineChrome(media, video, cluster, sound, expand) {
-  let timer = 0;
-  let over = false;
-  sound.tabIndex = -1;
-  expand.tabIndex = -1;
-  const hide = () => {
-    over = false;
-    window.clearTimeout(timer);
-    cluster.classList.remove("is-shown");
-    sound.tabIndex = -1;
-    expand.tabIndex = -1;
-  };
-  const arm = () => {
-    window.clearTimeout(timer);
-    timer = window.setTimeout(() => {
-      if (
-        over ||
-        sound.matches(":hover") ||
-        sound.matches(":focus-visible") ||
-        expand.matches(":hover") ||
-        expand.matches(":focus-visible")
-      ) {
-        arm();
-        return;
-      }
-      hide();
-    }, SOUND_VISIBLE_MS);
-  };
-  const show = () => {
-    if (video === activeViewerVideo) return;
-    cluster.classList.add("is-shown");
-    sound.tabIndex = sound.hidden ? -1 : 0;
-    expand.tabIndex = 0;
-    if (over) {
-      window.clearTimeout(timer);
+    if (suppressViewerClick) {
+      suppressViewerClick = false;
       return;
     }
-    arm();
-  };
-  media.addEventListener("pointerenter", (event) => {
-    if (event.pointerType === "touch") return;
-    over = true;
-    show();
+    if (activeViewerVideo === video) {
+      revealChrome();
+      return;
+    }
+    openViewer(video);
   });
-  media.addEventListener("pointerleave", (event) => {
-    if (event.pointerType === "touch") return;
-    over = false;
-    if (cluster.classList.contains("is-shown")) arm();
-  });
-  media.addEventListener("click", (event) => {
-    if (event.target.closest && event.target.closest(".sound, .expand")) return;
-    show();
-  });
-  sound.addEventListener("click", show);
-  sound.addEventListener("focus", show);
-  expand.addEventListener("focus", show);
-  inlineHide.set(video, hide);
 }
 
+const feedVideoList = [];
 let soundMark = 0;
 
 function soundButton(video) {
@@ -390,29 +329,7 @@ function soundButton(video) {
     paint();
   });
   video.addEventListener("volumechange", paint);
-  const reveal = () => {
-    const presence = audioPresence(video);
-    if (presence === false) button.hidden = true;
-    else if (presence === true) button.hidden = false;
-  };
-  video.addEventListener("loadedmetadata", reveal);
-  video.addEventListener("loadeddata", reveal);
-  if (video.readyState >= 1) reveal();
   paint();
-  return button;
-}
-
-function expandButton(video) {
-  const button = el("button", "expand", { type: "button", "aria-label": "Full screen" });
-  button.innerHTML =
-    '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
-    '<path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/>' +
-    "</svg>";
-  button.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    openViewer(video);
-  });
   return button;
 }
 
@@ -495,11 +412,8 @@ function renderFileVideo(item) {
   video.setAttribute("controlsList", "nodownload nofullscreen noremoteplayback");
   video.disablePictureInPicture = true;
   watchPlayback(video);
-  const sound = soundButton(video);
-  const expand = expandButton(video);
-  const cluster = el("div", "inline-controls");
-  cluster.append(expand, sound);
-  return { video, cluster, sound, expand };
+  feedVideoList.push(video);
+  return { video, sound: soundButton(video) };
 }
 
 function renderEmbed(item) {
@@ -546,8 +460,7 @@ function renderCard(item, index) {
   } else if (item.type === "video") {
     media.classList.add("is-video");
     const file = renderFileVideo(item);
-    media.append(file.video, file.cluster);
-    bindInlineChrome(media, file.video, file.cluster, file.sound, file.expand);
+    media.append(file.video, file.sound);
   } else {
     media.append(...renderEmbed(item));
   }
@@ -659,6 +572,11 @@ lightbox.addEventListener("close", () => {
   opener = null;
 });
 document.addEventListener("keydown", (event) => {
+  if (activeViewerVideo && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+    event.preventDefault();
+    goToVideo(event.key === "ArrowDown" ? 1 : -1);
+    return;
+  }
   if (event.key !== "Escape") return;
   if (activeViewerVideo) {
     event.preventDefault();
@@ -671,8 +589,8 @@ document.addEventListener("keydown", (event) => {
 const CHROME_MS = 2500;
 const viewer = document.querySelector("#viewer");
 const viewerStage = viewer.querySelector(".viewer-stage");
-const viewerClose = viewer.querySelector(".viewer-close");
-const viewerChrome = viewer.querySelector(".viewer-chrome");
+const viewerReel = viewer.querySelector(".viewer-reel");
+const viewerBack = viewer.querySelector(".viewer-back");
 const viewerProgress = viewer.querySelector(".viewer-progress");
 const viewerBuffer = viewer.querySelector(".viewer-progress-buffer");
 const viewerFill = viewer.querySelector(".viewer-progress-fill");
@@ -681,11 +599,16 @@ const viewerTime = viewer.querySelector(".viewer-time");
 const viewerSound = viewer.querySelector(".viewer-sound");
 const paintSpeaker = mountSpeaker(viewerSound);
 
-let viewerSlot = null;
+const videoSlots = new WeakMap();
 let viewerReturn = null;
 let chromeTimer = 0;
 let seeking = false;
 let scrollLockY = 0;
+let closeScrollY = 0;
+let viewerSoundOn = true;
+let swipeBusy = false;
+let swipe = null;
+let suppressViewerClick = false;
 const viewerMediaEvents = ["timeupdate", "progress", "durationchange", "play", "pause", "waiting", "playing", "seeked", "volumechange", "loadedmetadata"];
 
 function formatRemaining(video) {
@@ -742,6 +665,7 @@ function revealChrome() {
 
 function lockScroll() {
   scrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
+  closeScrollY = scrollLockY;
   document.body.classList.add("viewer-open");
   document.body.style.position = "fixed";
   document.body.style.top = `-${scrollLockY}px`;
@@ -757,7 +681,7 @@ function unlockScroll() {
   document.body.style.left = "";
   document.body.style.right = "";
   document.body.style.width = "";
-  window.scrollTo(0, scrollLockY);
+  window.scrollTo(0, closeScrollY);
 }
 
 function mostlyVisible(node) {
@@ -788,31 +712,111 @@ function unmuteVideo(video, andPlay) {
   if (pending && typeof pending.catch === "function") pending.catch(() => {});
 }
 
-function openViewer(video) {
-  if (!video || activeViewerVideo === video) return;
-  if (activeViewerVideo) closeViewer();
-  inlineHide.get(video)?.();
-  activeViewerVideo = video;
-  viewerReturn = video.closest(".card") || video.parentElement;
+function holdPlace(video) {
+  const existing = videoSlots.get(video);
+  if (existing && existing.isConnected) return existing;
   const slot = document.createElement("div");
   slot.className = "video-slot";
   if (video.videoWidth && video.videoHeight) {
     slot.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
   } else {
-    slot.style.height = `${Math.max(1, Math.round(video.getBoundingClientRect().height))}px`;
+    slot.style.height = `${Math.max(1, Math.round(video.getBoundingClientRect().height || 240))}px`;
   }
-  video.before(slot);
-  viewerSlot = slot;
-  viewerStage.append(video);
+  if (video.parentNode) video.before(slot);
+  videoSlots.set(video, slot);
+  return slot;
+}
+
+function restoreToFeed(video) {
+  if (!video) return;
+  for (const type of viewerMediaEvents) video.removeEventListener(type, syncViewer);
+  video.muted = true;
+  video.defaultMuted = true;
+  video.setAttribute("muted", "");
+  video.controls = false;
+  video.removeAttribute("controls");
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  if (!video.paused) video.pause();
+  const slot = videoSlots.get(video);
+  if (slot && slot.parentNode) slot.replaceWith(video);
+  videoSlots.delete(video);
+}
+
+function bindViewerMedia(video) {
+  for (const type of viewerMediaEvents) video.removeEventListener(type, syncViewer);
+  for (const type of viewerMediaEvents) video.addEventListener(type, syncViewer);
+}
+
+function playInViewer(video) {
+  if (viewerSoundOn) {
+    unmuteVideo(video, true);
+    return;
+  }
+  document.querySelectorAll("video").forEach((other) => {
+    if (other === video) return;
+    other.muted = true;
+    if (!other.paused) other.pause();
+  });
+  video.muted = true;
+  video.defaultMuted = true;
+  video.setAttribute("muted", "");
+  video.controls = false;
+  video.removeAttribute("controls");
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  heldPause.delete(video);
+  userStarted.add(video);
+  const pending = video.play();
+  if (pending && typeof pending.catch === "function") pending.catch(() => {});
+}
+
+function clearReel() {
+  viewerReel.replaceChildren();
+  viewerReel.style.transition = "none";
+  viewerReel.style.transform = "translateY(0px)";
+}
+
+function mountCurrentPane(video) {
+  clearReel();
+  const pane = document.createElement("div");
+  pane.className = "viewer-pane is-current";
+  pane.append(video);
+  viewerReel.append(pane);
+}
+
+function rememberFeedPosition(video) {
+  const slot = videoSlots.get(video);
+  const anchor = slot && slot.isConnected ? slot : video;
+  const card = anchor.closest(".card");
+  if (!card) return;
+  viewerReturn = card;
+  const rect = card.getBoundingClientRect();
+  const visible = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+  const enough = rect.height > 0 && visible / Math.min(rect.height, window.innerHeight) >= 0.55;
+  if (enough) return;
+  const top = scrollLockY + rect.top;
+  const centered = top - Math.max(12, (window.innerHeight - Math.min(rect.height, window.innerHeight)) / 2);
+  closeScrollY = Math.max(0, Math.round(centered));
+}
+
+function openViewer(video) {
+  if (!video || swipeBusy || activeViewerVideo === video) return;
+  if (activeViewerVideo) closeViewer();
+  viewerSoundOn = true;
+  activeViewerVideo = video;
+  viewerReturn = video.closest(".card") || video.parentElement;
+  holdPlace(video);
+  mountCurrentPane(video);
   viewer.classList.remove("is-paused");
   viewer.classList.add("is-chrome");
   viewer.hidden = false;
   lockScroll();
-  unmuteVideo(video, true);
-  for (const type of viewerMediaEvents) video.addEventListener(type, syncViewer);
+  bindViewerMedia(video);
+  playInViewer(video);
   syncViewer();
   revealChrome();
-  viewerClose.focus();
+  viewerBack.focus();
 }
 
 function closeViewer() {
@@ -820,18 +824,25 @@ function closeViewer() {
   if (!video) return;
   window.clearTimeout(chromeTimer);
   seeking = false;
-  for (const type of viewerMediaEvents) video.removeEventListener(type, syncViewer);
-  video.muted = true;
-  video.defaultMuted = true;
-  video.setAttribute("muted", "");
-  video.controls = false;
-  video.removeAttribute("controls");
-  if (viewerSlot && viewerSlot.parentNode) viewerSlot.replaceWith(video);
-  viewerSlot = null;
+  swipe = null;
+  swipeBusy = false;
+  const neighbor = viewerReel.querySelector(".viewer-pane.is-neighbor video");
+  if (neighbor && neighbor !== video) restoreToFeed(neighbor);
+  rememberFeedPosition(video);
   activeViewerVideo = null;
+  restoreToFeed(video);
+  clearReel();
   viewer.classList.remove("is-open", "is-chrome", "is-paused", "is-waiting");
   viewer.hidden = true;
   unlockScroll();
+  const card = video.closest(".card");
+  if (card) {
+    const rect = card.getBoundingClientRect();
+    const visible = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+    if (!(rect.height > 0 && visible / rect.height >= 0.45)) {
+      card.scrollIntoView({ block: "center", inline: "nearest" });
+    }
+  }
   heldPause.delete(video);
   if (mostlyVisible(video)) {
     visibleVideos.add(video);
@@ -852,10 +863,194 @@ function closeViewer() {
 function toggleViewerSound() {
   const video = activeViewerVideo;
   if (!video) return;
+  viewerSoundOn = video.muted;
   if (video.muted) unmuteVideo(video, false);
   else video.muted = true;
   paintSpeaker(video);
   revealChrome();
+}
+
+function neighborOf(video, dir) {
+  let index = feedVideoList.indexOf(video);
+  let guard = 0;
+  while (dir > 0 && index === feedVideoList.length - 1 && cursor < total && guard < 30) {
+    appendBatch();
+    index = feedVideoList.indexOf(video);
+    guard += 1;
+  }
+  if (cursor >= total) finish();
+  const next = index + dir;
+  if (index < 0 || next < 0 || next >= feedVideoList.length) return null;
+  return feedVideoList[next];
+}
+
+function neighborPane(video, dir) {
+  const existing = viewerReel.querySelector(".viewer-pane.is-neighbor");
+  if (existing) {
+    const other = existing.querySelector("video");
+    existing.remove();
+    if (other && other !== video) restoreToFeed(other);
+  }
+  if (!video) return;
+  holdPlace(video);
+  const pane = document.createElement("div");
+  pane.className = "viewer-pane is-neighbor";
+  pane.style.top = dir > 0 ? "100%" : "-100%";
+  pane.append(video);
+  viewerReel.append(pane);
+  video.muted = true;
+  video.defaultMuted = true;
+  video.setAttribute("muted", "");
+  if (video.paused) {
+    const pending = video.play();
+    if (pending && typeof pending.catch === "function") pending.catch(() => {});
+  }
+}
+
+function settle(incoming) {
+  const outgoing = activeViewerVideo;
+  if (outgoing && outgoing !== incoming) restoreToFeed(outgoing);
+  const stray = viewerReel.querySelector(".viewer-pane.is-neighbor video");
+  if (stray && stray !== incoming) restoreToFeed(stray);
+  activeViewerVideo = incoming;
+  mountCurrentPane(incoming);
+  bindViewerMedia(incoming);
+  playInViewer(incoming);
+  syncViewer();
+  rememberFeedPosition(incoming);
+  revealChrome();
+  swipeBusy = false;
+}
+
+function animateReel(to, done) {
+  let settled = false;
+  const finish = () => {
+    if (settled) return;
+    settled = true;
+    viewerReel.removeEventListener("transitionend", onEnd);
+    viewerReel.style.transition = "none";
+    done();
+  };
+  const onEnd = (event) => {
+    if (event.propertyName !== "transform") return;
+    finish();
+  };
+  if (reduceMotion.matches) {
+    viewerReel.style.transition = "none";
+    viewerReel.style.transform = `translateY(${to}px)`;
+    finish();
+    return;
+  }
+  viewerReel.style.transition = "transform 0.34s ease";
+  viewerReel.style.transform = `translateY(${to}px)`;
+  viewerReel.addEventListener("transitionend", onEnd);
+  window.setTimeout(finish, 520);
+}
+
+function bounce(dir) {
+  if (reduceMotion.matches) return;
+  swipeBusy = true;
+  viewerReel.style.transition = "transform 0.16s ease";
+  viewerReel.style.transform = `translateY(${dir > 0 ? -64 : 64}px)`;
+  window.setTimeout(() => animateReel(0, () => {
+    swipeBusy = false;
+  }), 170);
+}
+
+function goToVideo(dir) {
+  if (!activeViewerVideo || swipeBusy || seeking || swipe) return;
+  const incoming = neighborOf(activeViewerVideo, dir);
+  if (!incoming) {
+    bounce(dir);
+    return;
+  }
+  neighborPane(incoming, dir);
+  const height = viewerStage.clientHeight || window.innerHeight || 1;
+  swipeBusy = true;
+  animateReel(dir > 0 ? -height : height, () => settle(incoming));
+}
+
+function swipePoint(event) {
+  const touch = event.touches && event.touches.length
+    ? event.touches[0]
+    : event.changedTouches && event.changedTouches.length
+      ? event.changedTouches[0]
+      : null;
+  if (touch) return { id: touch.identifier, x: touch.clientX, y: touch.clientY };
+  return { id: event.pointerId, x: event.clientX, y: event.clientY };
+}
+
+function onSwipeDown(event) {
+  if (!activeViewerVideo || swipeBusy || seeking) return;
+  if (event.button != null && event.button !== 0) return;
+  const point = swipePoint(event);
+  swipe = { id: point.id, x: point.x, y: point.y, dx: 0, dy: 0, axis: "", dir: 0, neighbor: null };
+  if (event.pointerId != null && viewerStage.setPointerCapture) {
+    try {
+      viewerStage.setPointerCapture(event.pointerId);
+    } catch {
+      /* pointer already released */
+    }
+  }
+}
+
+function onSwipeMove(event) {
+  if (!swipe) return;
+  const point = swipePoint(event);
+  if (point.id !== swipe.id) return;
+  swipe.dx = point.x - swipe.x;
+  swipe.dy = point.y - swipe.y;
+  if (!swipe.axis) {
+    if (Math.hypot(swipe.dx, swipe.dy) < 10) return;
+    swipe.axis = Math.abs(swipe.dy) > Math.abs(swipe.dx) ? "y" : "x";
+  }
+  if (swipe.axis !== "y") return;
+  const dir = swipe.dy < 0 ? 1 : -1;
+  if (dir !== swipe.dir) {
+    swipe.dir = dir;
+    swipe.neighbor = neighborOf(activeViewerVideo, dir);
+    neighborPane(swipe.neighbor, dir);
+  }
+  const height = viewerStage.clientHeight || window.innerHeight || 1;
+  let dy = swipe.dy;
+  if (!swipe.neighbor) dy *= 0.32;
+  else dy = Math.max(-height, Math.min(height, dy));
+  viewerReel.style.transition = "none";
+  viewerReel.style.transform = `translateY(${dy}px)`;
+}
+
+function onSwipeUp(event) {
+  if (!swipe) return;
+  const point = swipePoint(event);
+  if (point.id !== swipe.id && event.type !== "pointercancel") return;
+  const state = swipe;
+  swipe = null;
+  if (state.axis === "y") {
+    suppressViewerClick = true;
+    window.setTimeout(() => {
+      suppressViewerClick = false;
+    }, 400);
+  }
+  if (state.axis !== "y") {
+    if (state.neighbor) restoreToFeed(state.neighbor);
+    viewerReel.style.transition = "none";
+    viewerReel.style.transform = "translateY(0px)";
+    return;
+  }
+  const height = viewerStage.clientHeight || window.innerHeight || 1;
+  const commit = Math.abs(state.dy) > Math.min(88, height * 0.16);
+  if (commit && state.neighbor) {
+    swipeBusy = true;
+    animateReel(state.dy < 0 ? -height : height, () => settle(state.neighbor));
+    return;
+  }
+  swipeBusy = true;
+  animateReel(0, () => {
+    if (state.neighbor) restoreToFeed(state.neighbor);
+    const stray = viewerReel.querySelector(".viewer-pane.is-neighbor");
+    if (stray) stray.remove();
+    swipeBusy = false;
+  });
 }
 
 function toggleViewerPlay() {
@@ -922,17 +1117,50 @@ function endSeek() {
   armChrome();
 }
 
-function closeFromBar(event) {
+function closeFromBack(event) {
   event.preventDefault();
   event.stopPropagation();
   closeViewer();
 }
-viewerClose.addEventListener("pointerdown", (event) => {
+viewerBack.addEventListener("pointerdown", (event) => {
   event.stopPropagation();
 });
-viewerClose.addEventListener("pointerup", closeFromBar);
-viewerClose.addEventListener("click", closeFromBar);
-viewerClose.addEventListener("touchend", closeFromBar, { passive: false });
+viewerBack.addEventListener("pointerup", closeFromBack);
+viewerBack.addEventListener("click", closeFromBack);
+viewerBack.addEventListener("touchend", closeFromBack, { passive: false });
+viewerStage.addEventListener("pointerdown", onSwipeDown);
+viewerStage.addEventListener("pointermove", onSwipeMove);
+viewerStage.addEventListener("pointerup", onSwipeUp);
+viewerStage.addEventListener("pointercancel", onSwipeUp);
+viewerStage.addEventListener("touchstart", (event) => {
+  if (window.PointerEvent) return;
+  onSwipeDown(event);
+}, { passive: true });
+viewerStage.addEventListener("touchmove", (event) => {
+  if (window.PointerEvent) return;
+  if (swipe && swipe.axis === "y" && event.cancelable) event.preventDefault();
+  onSwipeMove(event);
+}, { passive: false });
+viewerStage.addEventListener("touchend", (event) => {
+  if (window.PointerEvent) return;
+  onSwipeUp(event);
+}, { passive: true });
+viewerStage.addEventListener("touchcancel", (event) => {
+  if (window.PointerEvent) return;
+  onSwipeUp(event);
+}, { passive: true });
+let wheelAt = 0;
+viewer.addEventListener("wheel", (event) => {
+  if (!activeViewerVideo) return;
+  if (event.target.closest && event.target.closest(".viewer-progress")) return;
+  event.preventDefault();
+  if (swipeBusy || swipe) return;
+  const now = Date.now();
+  if (now - wheelAt < 500) return;
+  if (Math.abs(event.deltaY) < 8) return;
+  wheelAt = now;
+  goToVideo(event.deltaY > 0 ? 1 : -1);
+}, { passive: false });
 viewerPlay.addEventListener("click", (event) => {
   event.preventDefault();
   event.stopPropagation();
