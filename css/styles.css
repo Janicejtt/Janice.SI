@@ -208,42 +208,56 @@ a {
 .profile {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
+  align-items: center;
+  text-align: center;
 }
 
 h1 {
   margin: 0;
+  max-width: 100%;
   color: #fff;
-  font-family: "Open Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: clamp(3.75rem, 5vw, 4.5rem);
+  font-family: Jost, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(2.125rem, 8.7vw, 2.5rem);
   font-weight: 300;
   font-style: normal;
   font-synthesis: none;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .intro {
   width: 100%;
-  max-width: 21rem;
-  margin: 1.35rem 0 0;
-  color: #fff;
-  font-family: "Open Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: 1rem;
+  margin: 1.65rem 0 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: Jost, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.75rem;
   font-weight: 300;
   font-style: normal;
   font-synthesis: none;
-  line-height: 1.55;
-  text-align: left;
+  letter-spacing: 0.15em;
+  line-height: 1.9;
+  text-align: center;
+  text-transform: uppercase;
+  text-wrap: balance;
 }
 
 .intro p {
   margin: 0;
+  padding-left: 0.15em;
+  text-wrap: balance;
 }
 
 .intro p + p {
-  margin-top: 1.2em;
+  margin-top: 1.45em;
+}
+
+@media (min-width: 800px) {
+  .intro {
+    font-size: 0.8125rem;
+  }
 }
 
 .feed {
