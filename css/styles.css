@@ -244,29 +244,24 @@ h1 {
   font-size: clamp(1.6rem, 5.2vw, 1.95rem);
 }
 
-.intro p:last-child {
-  margin-top: 0.2rem;
+.intro-body {
+  margin-top: 0.25rem;
   font-size: clamp(1.16rem, 3.7vw, 1.38rem);
 }
 
-.feed {
-  margin-top: 2.45rem;
-}
-
-.closing {
-  margin: 2.85rem 0 0.15rem;
-  color: rgba(255, 255, 255, 0.55);
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-synthesis: none;
-  font-size: 1.05rem;
+.intro-note {
+  margin-top: 1.2rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: clamp(1.02rem, 3.15vw, 1.15rem);
   line-height: 1.55;
-  text-align: center;
 }
 
-.closing p {
-  margin: 0;
+.intro-note p + p {
+  margin-top: 0.15rem;
+}
+
+.feed {
+  margin-top: 2.5rem;
 }
 
 .card {
