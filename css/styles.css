@@ -224,19 +224,49 @@ h1 {
   text-wrap: balance;
 }
 
-.tagline {
-  margin: 0.55rem 0 0;
-  color: #fff;
-  font-family: var(--font);
-  font-size: 1.05rem;
+.intro {
+  max-width: 32.5rem;
+  margin: 1.35rem 0 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
   font-weight: 400;
-  letter-spacing: normal;
-  text-transform: none;
-  line-height: 1.35;
+  font-synthesis: none;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.intro p {
+  margin: 0;
+}
+
+.intro-hello {
+  font-size: clamp(1.6rem, 5.2vw, 1.95rem);
+}
+
+.intro p:last-child {
+  margin-top: 0.2rem;
+  font-size: clamp(1.16rem, 3.7vw, 1.38rem);
 }
 
 .feed {
-  margin-top: 1.85rem;
+  margin-top: 2.45rem;
+}
+
+.closing {
+  margin: 2.85rem 0 0.15rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.closing p {
+  margin: 0;
 }
 
 .card {
