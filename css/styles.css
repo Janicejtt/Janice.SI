@@ -19,7 +19,7 @@
 }
 
 html {
-  background: #0a0a0a;
+  background: #000;
 }
 
 body {
@@ -29,7 +29,7 @@ body {
   font-family: var(--font);
   font-size: 1.0625rem;
   line-height: 1.45;
-  background: #0a0a0a;
+  background: #000;
 }
 
 img,
@@ -200,7 +200,7 @@ a {
 .page {
   position: relative;
   z-index: 1;
-  width: min(100% - 2rem, var(--column));
+  width: min(100% - 3rem, var(--column));
   margin: 0 auto;
   padding: clamp(3.25rem, 10vh, 5.75rem) 0 calc(2.75rem + env(safe-area-inset-bottom));
 }
@@ -208,32 +208,33 @@ a {
 .profile {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
 }
 
 h1 {
   margin: 0;
   color: #fff;
-  font-family: "Bodoni Moda", "Times New Roman", serif;
-  font-size: clamp(3.75rem, 16vw, 5.75rem);
-  font-weight: 800;
-  font-style: italic;
+  font-family: "Open Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(3.75rem, 5vw, 4.5rem);
+  font-weight: 300;
+  font-style: normal;
   font-synthesis: none;
   letter-spacing: -0.03em;
-  line-height: 0.95;
+  line-height: 1.05;
 }
 
 .intro {
-  width: min(100%, 22.25rem);
-  margin: 1.15rem 0 0;
+  width: 100%;
+  max-width: 21rem;
+  margin: 1.35rem 0 0;
   color: #fff;
-  font-family: Poppins, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: "Open Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: 1rem;
-  font-weight: 400;
+  font-weight: 300;
   font-style: normal;
   font-synthesis: none;
-  line-height: 1.5;
+  line-height: 1.55;
   text-align: left;
 }
 
