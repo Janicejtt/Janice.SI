@@ -218,7 +218,7 @@ h1 {
   color: #fff;
   font-family: Jost, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: clamp(2.125rem, 8.7vw, 2.5rem);
-  font-weight: 300;
+  font-weight: 500;
   font-style: normal;
   font-synthesis: none;
   letter-spacing: 0.5em;
@@ -229,35 +229,29 @@ h1 {
 }
 
 .intro {
+  align-self: flex-start;
   width: 100%;
-  margin: 1.65rem 0 0;
-  color: rgba(255, 255, 255, 0.85);
-  font-family: Jost, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: 0.75rem;
+  max-width: 21rem;
+  margin: 1.35rem 0 0;
+  color: #fff;
+  font-family: "Open Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 1rem;
   font-weight: 300;
   font-style: normal;
   font-synthesis: none;
-  letter-spacing: 0.15em;
-  line-height: 1.9;
-  text-align: center;
-  text-transform: uppercase;
-  text-wrap: balance;
+  letter-spacing: normal;
+  line-height: 1.55;
+  text-align: left;
+  text-transform: none;
 }
 
 .intro p {
   margin: 0;
-  padding-left: 0.15em;
-  text-wrap: balance;
+  padding: 0;
 }
 
 .intro p + p {
-  margin-top: 1.45em;
-}
-
-@media (min-width: 800px) {
-  .intro {
-    font-size: 0.8125rem;
-  }
+  margin-top: 1.2em;
 }
 
 .feed {
