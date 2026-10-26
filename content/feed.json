@@ -136,6 +136,14 @@
       "width": 672,
       "height": 448,
       "alt": "Video artwork by Janice SI"
+    },
+    {
+      "type": "video",
+      "src": "assets/art/janice-art-18.mp4",
+      "poster": "assets/posters/janice-art-18.jpg",
+      "width": 480,
+      "height": 854,
+      "alt": "Video artwork by Janice SI"
     }
   ]
 }
