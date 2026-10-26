@@ -225,39 +225,43 @@ h1 {
 }
 
 .intro {
-  max-width: 32.5rem;
-  margin: 1.35rem 0 0;
-  color: rgba(255, 255, 255, 0.88);
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-synthesis: none;
-  line-height: 1.6;
-  text-wrap: pretty;
-}
-
-.intro p {
-  margin: 0;
+  max-width: 26.25rem;
+  margin: 1.2rem 0 0;
+  text-align: center;
 }
 
 .intro-hello {
-  font-size: clamp(1.6rem, 5.2vw, 1.95rem);
+  margin: 0;
+  color: #fff;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(2.1rem, 6.4vw, 2.55rem);
+  font-weight: 400;
+  font-style: normal;
+  font-synthesis: none;
+  letter-spacing: 0.07em;
+  line-height: 1.15;
+}
+
+.intro-hello em {
+  font-style: italic;
 }
 
 .intro-body {
-  margin-top: 0.25rem;
-  font-size: clamp(1.16rem, 3.7vw, 1.38rem);
+  margin: 0.45rem 0 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: Raleway, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 300;
+  font-style: normal;
+  font-synthesis: none;
+  line-height: 1.7;
+  text-wrap: pretty;
 }
 
-.intro-note {
-  margin-top: 1.2rem;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: clamp(1.02rem, 3.15vw, 1.15rem);
-  line-height: 1.55;
-}
-
-.intro-note p + p {
-  margin-top: 0.15rem;
+@media (max-width: 430px) {
+  .intro-body {
+    font-size: 0.875rem;
+  }
 }
 
 .feed {
