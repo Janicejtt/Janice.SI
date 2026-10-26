@@ -20,6 +20,7 @@
 
 html {
   background: #000;
+  overflow-x: clip;
 }
 
 body {
@@ -229,18 +230,17 @@ h1 {
 }
 
 .intro {
+  container-type: inline-size;
   align-self: flex-start;
   width: 100%;
-  max-width: 21rem;
   margin: 1.35rem 0 0;
   color: #fff;
-  font-family: "Open Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: 1rem;
+  font-family: Montserrat, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-weight: 300;
   font-style: normal;
   font-synthesis: none;
-  letter-spacing: normal;
-  line-height: 1.55;
+  letter-spacing: 0;
+  line-height: 1.45;
   text-align: left;
   text-transform: none;
 }
@@ -248,6 +248,9 @@ h1 {
 .intro p {
   margin: 0;
   padding: 0;
+  font-size: clamp(0.44rem, 1.95vw, 0.72rem);
+  font-size: 2.22cqw;
+  white-space: nowrap;
 }
 
 .intro p + p {
