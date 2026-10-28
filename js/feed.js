@@ -1,4 +1,4 @@
-const VERSION = "20261028f";
+const VERSION = "20261029d";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
@@ -765,11 +765,9 @@ function holdPlace(video) {
   if (existing && existing.isConnected) return existing;
   const slot = document.createElement("div");
   slot.className = "video-slot";
-  if (video.videoWidth && video.videoHeight) {
-    slot.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
-  } else {
-    slot.style.height = `${Math.max(1, Math.round(video.getBoundingClientRect().height || 240))}px`;
-  }
+  const slotW = video.videoWidth || Number(video.getAttribute("width")) || 0;
+  const slotH = video.videoHeight || Number(video.getAttribute("height")) || 0;
+  if (slotW > 0 && slotH > 0) slot.style.aspectRatio = `${slotW} / ${slotH}`;
   if (video.parentNode) video.before(slot);
   videoSlots.set(video, slot);
   return slot;
