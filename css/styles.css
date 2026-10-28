@@ -10,7 +10,7 @@
   --shadow: 0 18px 40px rgba(12, 0, 10, 0.32);
   --column: 32rem;
   --font: Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --msg-color: rgba(255, 255, 255, 0.85);
+  --msg-color: #efe6dc;
 }
 
 *,
@@ -237,12 +237,12 @@ h1 {
   margin: 1.6rem 0 0;
   color: var(--msg-color);
   font-family: Montserrat, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: clamp(0.8125rem, 0.65rem + 0.7vw, 1rem);
-  font-weight: 300;
+  font-size: clamp(1rem, 0.9rem + 0.42vw, 1.125rem);
+  font-weight: 400;
   font-style: normal;
   font-synthesis: none;
   letter-spacing: 0;
-  line-height: 1.5;
+  line-height: 1.9;
   text-align: left;
   text-transform: none;
 }
@@ -259,8 +259,7 @@ h1 {
 }
 
 .intro p + p {
-  margin-top: 1.35em;
-  white-space: nowrap;
+  margin-top: 1.15em;
 }
 
 .intro p:nth-child(2) {
@@ -269,7 +268,7 @@ h1 {
 
 .intro p:last-child {
   margin-top: 2em;
-  color: color-mix(in srgb, var(--msg-color) 71%, transparent);
+  color: color-mix(in srgb, var(--msg-color) 75%, transparent);
   animation-delay: 0.75s;
 }
 
