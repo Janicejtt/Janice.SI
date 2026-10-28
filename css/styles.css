@@ -230,17 +230,17 @@ h1 {
 }
 
 .intro {
-  container-type: inline-size;
   align-self: flex-start;
   width: 100%;
   margin: 1.35rem 0 0;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.85);
   font-family: Montserrat, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(0.8125rem, 0.65rem + 0.7vw, 1rem);
   font-weight: 300;
   font-style: normal;
   font-synthesis: none;
   letter-spacing: 0;
-  line-height: 1.45;
+  line-height: 1.5;
   text-align: left;
   text-transform: none;
 }
@@ -248,13 +248,15 @@ h1 {
 .intro p {
   margin: 0;
   padding: 0;
-  font-size: clamp(0.44rem, 1.95vw, 0.72rem);
-  font-size: 2.22cqw;
-  white-space: nowrap;
+}
+
+.intro p:first-child {
+  text-wrap: balance;
 }
 
 .intro p + p {
-  margin-top: 1.2em;
+  margin-top: 1.35em;
+  white-space: nowrap;
 }
 
 .feed {
