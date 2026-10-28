@@ -227,12 +227,21 @@ h1 {
   line-height: 1.15;
   text-transform: uppercase;
   white-space: nowrap;
+  animation: profile-in 0.8s ease both;
+}
+
+.rule {
+  width: 40px;
+  height: 1px;
+  margin: 1.15rem 0 0;
+  background: rgba(255, 255, 255, 0.35);
+  animation: profile-in 0.8s ease 0.25s both;
 }
 
 .intro {
   align-self: flex-start;
   width: 100%;
-  margin: 1.35rem 0 0;
+  margin: 1.15rem 0 0;
   color: rgba(255, 255, 255, 0.85);
   font-family: Montserrat, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: clamp(0.8125rem, 0.65rem + 0.7vw, 1rem);
@@ -248,15 +257,39 @@ h1 {
 .intro p {
   margin: 0;
   padding: 0;
+  animation: profile-in 0.8s ease both;
 }
 
 .intro p:first-child {
   text-wrap: balance;
+  animation-delay: 0.5s;
 }
 
 .intro p + p {
   margin-top: 1.35em;
   white-space: nowrap;
+}
+
+.intro p:nth-child(2) {
+  animation-delay: 0.75s;
+}
+
+.intro p:last-child {
+  margin-top: 2em;
+  color: rgba(255, 255, 255, 0.6);
+  animation-delay: 1s;
+}
+
+@keyframes profile-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .feed {
@@ -901,7 +934,10 @@ body.viewer-open {
   .marfa-blob,
   .viewer-chrome,
   .viewer-reel,
-  .viewer-progress-track {
+  .viewer-progress-track,
+  .profile h1,
+  .rule,
+  .intro p {
     animation: none;
     transition: none;
   }
