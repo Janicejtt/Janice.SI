@@ -10,6 +10,7 @@
   --shadow: 0 18px 40px rgba(12, 0, 10, 0.32);
   --column: 32rem;
   --font: Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --msg-color: rgba(255, 255, 255, 0.85);
 }
 
 *,
@@ -230,19 +231,11 @@ h1 {
   animation: profile-in 0.8s ease both;
 }
 
-.rule {
-  width: 40px;
-  height: 1px;
-  margin: 1.15rem 0 0;
-  background: rgba(255, 255, 255, 0.35);
-  animation: profile-in 0.8s ease 0.25s both;
-}
-
 .intro {
   align-self: flex-start;
   width: 100%;
-  margin: 1.15rem 0 0;
-  color: rgba(255, 255, 255, 0.85);
+  margin: 1.6rem 0 0;
+  color: var(--msg-color);
   font-family: Montserrat, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: clamp(0.8125rem, 0.65rem + 0.7vw, 1rem);
   font-weight: 300;
@@ -262,7 +255,7 @@ h1 {
 
 .intro p:first-child {
   text-wrap: balance;
-  animation-delay: 0.5s;
+  animation-delay: 0.25s;
 }
 
 .intro p + p {
@@ -271,13 +264,13 @@ h1 {
 }
 
 .intro p:nth-child(2) {
-  animation-delay: 0.75s;
+  animation-delay: 0.5s;
 }
 
 .intro p:last-child {
   margin-top: 2em;
-  color: rgba(255, 255, 255, 0.6);
-  animation-delay: 1s;
+  color: color-mix(in srgb, var(--msg-color) 71%, transparent);
+  animation-delay: 0.75s;
 }
 
 @keyframes profile-in {
@@ -936,7 +929,6 @@ body.viewer-open {
   .viewer-reel,
   .viewer-progress-track,
   .profile h1,
-  .rule,
   .intro p {
     animation: none;
     transition: none;
