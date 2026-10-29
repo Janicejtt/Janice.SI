@@ -1,4 +1,4 @@
-const VERSION = "20261029f";
+const VERSION = "20261029h";
 
 const { CONTENTS_URL, UPLOAD_URL, filesFromContents, mergeArt, wantsEdit } = await import(
   `./catalog.js?v=${VERSION}`
