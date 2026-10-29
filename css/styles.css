@@ -268,7 +268,6 @@ h1 {
 
 .intro p:last-child {
   margin-top: 2em;
-  color: color-mix(in srgb, var(--msg-color) 75%, transparent);
   animation-delay: 1.05s;
 }
 
