@@ -3,6 +3,14 @@
   "items": [
     {
       "type": "video",
+      "src": "assets/art/janice-art-24.mp4",
+      "poster": "assets/posters/janice-art-24.jpg",
+      "width": 1168,
+      "height": 768,
+      "alt": "Video artwork by Janice SI"
+    },
+    {
+      "type": "video",
       "src": "assets/art/janice-art-23.mp4",
       "poster": "assets/posters/janice-art-23.jpg",
       "width": 608,
